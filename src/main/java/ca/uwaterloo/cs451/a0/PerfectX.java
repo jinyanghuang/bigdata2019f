@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
+import java.util.List;
 /**
  * Simple word count demo.
  */
