@@ -60,9 +60,9 @@ public class PerfectX extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
       List<String> tokens = Tokenizer.tokenize(value.toString());
-      for (int i=0; i<tokens.size()-2;i++){
+      for (int i=0; i<tokens.size()-1;i++){
         String word = tokens.get(i);
-        if (word == "perfect"){
+        if (word.equals("perfect")){
           String perfectX = tokens.get(i+1);
           WORD.set(perfectX);
           context.write(WORD, ONE);
