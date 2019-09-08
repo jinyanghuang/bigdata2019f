@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.List;
+
 /**
  * Simple word count demo.
  */
@@ -58,9 +58,14 @@ public class PerfectX extends Configured implements Tool {
     @Override
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
-      for (String word : Tokenizer.tokenize(value.toString())) {
-        WORD.set(word);
-        context.write(WORD, ONE);
+      List<String> tokens = Tokenizer.tokenize(value.toString());
+      for (int i=0; i<tokens.size()-2;i++){
+        String word = tokens.get(i);
+        if (word == "perfect"){
+          String perfectX = tokens.get(i+1);
+          WORD.set(perfectX);
+          context.write(WORD, ONE);
+        }
       }
     }
   }
@@ -76,26 +81,13 @@ public class PerfectX extends Configured implements Tool {
     @Override
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
-      List<String> tokens = Tokenizer.tokenize(value.toString());
-      for (int i=0; i<tokens.size()-2;i++){
-        String word = tokens.get(i);
-        if (word == "perfect"){
-          String perfectX = tokens.get(i+1);
-          if (counts.containsKey(perfectX)) {
-            counts.put(perfectX, counts.get(perfectX)+1);
-          } else {
-            counts.put(perfectX, 1);
-          }
-        }
-      }
-      Iterator<Map.Entry<String,Integer>> iterator = counts.entrySet().iterator();
-
-      while(iterator.hasNext()){
-        Map.Entry<String, Integer> entry = iterator.next();
-        if (entry.getValue() == 1){
-          iterator.remove();
-        }
-      }
+     for (String word : Tokenizer.tokenize(value.toString())) {
+       if (counts.containsKey(word)) {
+         counts.put(word, counts.get(word)+1);
+       } else {
+         counts.put(word, 1);
+       }
+     }
     }
 
     @Override
@@ -125,8 +117,10 @@ public class PerfectX extends Configured implements Tool {
       while (iter.hasNext()) {
         sum += iter.next().get();
       }
-      SUM.set(sum);
-      context.write(key, SUM);
+      if(sum>1){
+        SUM.set(sum);
+        context.write(key, SUM);
+      }
     }
   }
 
