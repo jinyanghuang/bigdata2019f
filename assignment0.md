@@ -1,6 +1,7 @@
 <h1>Jinyang huang 20812495</h1>
 <h1>Question 1</h1>
-<p>love 4</p>
+<p>love 4, in 4</p>
+<p>both love and in appear 4 times</p>
 <p>hadoop fs -cat cs451-bigdatateach-a0-shakespeare/part-r-0000* | awk '{print $1,$2;}' | sort -k 2 -nr | head -1 > perfectx.txt
 </p>
 <h1>Question 2</h1>
