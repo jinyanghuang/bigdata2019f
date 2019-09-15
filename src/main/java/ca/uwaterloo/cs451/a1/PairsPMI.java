@@ -1,23 +1,6 @@
-/**
- * Bespin: reference implementations of "big data" algorithms
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ca.uwaterloo.cs451.a1;
 
 import io.bespin.java.util.Tokenizer;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,10 +9,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -37,83 +20,75 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
+import tl.lin.data.pair.PairOfStrings;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 /**
- * Simple word count demo.
+ * <p>
+ * Implementation of the "pairs" algorithm for computing co-occurrence matrices from a large text
+ * collection. This algorithm is described in Chapter 3 of "Data-Intensive Text Processing with 
+ * MapReduce" by Lin &amp; Dyer, as well as the following paper:
+ * </p>
+ *
+ * <blockquote>Jimmy Lin. <b>Scalable Language Processing Algorithms for the Masses: A Case Study in
+ * Computing Word Co-occurrence Matrices with MapReduce.</b> <i>Proceedings of the 2008 Conference
+ * on Empirical Methods in Natural Language Processing (EMNLP 2008)</i>, pages 419-428.</blockquote>
+ *
+ * @author Jimmy Lin
  */
 public class PairsPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(PairsPMI.class);
 
-  // Mapper: emits (token, 1) for every word occurrence.
-  public static final class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
-    // Reuse objects to save overhead of object creation.
+  private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
+    private static final PairOfStrings PAIR = new PairOfStrings();
     private static final IntWritable ONE = new IntWritable(1);
-    private static final Text WORD = new Text();
+    private int window = 2;
 
     @Override
-    public void map(LongWritable key, Text value, Context context)
-        throws IOException, InterruptedException {
-      for (String word : Tokenizer.tokenize(value.toString())) {
-        WORD.set(word);
-        context.write(WORD, ONE);
-      }
-    }
-  }
-
-  public static final class MyMapperIMC extends Mapper<LongWritable, Text, Text, IntWritable> {
-    private Map<String, Integer> counts;
-
-    @Override
-    public void setup(Context context) throws IOException, InterruptedException {
-      counts = new HashMap<>();
+    public void setup(Context context) {
+      window = context.getConfiguration().getInt("window", 2);
     }
 
     @Override
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
-      for (String word : Tokenizer.tokenize(value.toString())) {
-        if (counts.containsKey(word)) {
-          counts.put(word, counts.get(word)+1);
-        } else {
-          counts.put(word, 1);
+      List<String> tokens = Tokenizer.tokenize(value.toString());
+
+      for (int i = 0; i < tokens.size(); i++) {
+        for (int j = Math.max(i - window, 0); j < Math.min(i + window + 1, tokens.size()); j++) {
+          if (i == j) continue;
+          PAIR.set(tokens.get(i), tokens.get(j));
+          context.write(PAIR, ONE);
         }
       }
     }
-
-    @Override
-    public void cleanup(Context context) throws IOException, InterruptedException {
-      IntWritable cnt = new IntWritable();
-      Text token = new Text();
-
-      for (Map.Entry<String, Integer> entry : counts.entrySet()) {
-        token.set(entry.getKey());
-        cnt.set(entry.getValue());
-        context.write(token, cnt);
-      }
-    }
   }
 
-  // Reducer: sums up all the counts.
-  public static final class MyReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-    // Reuse objects.
+  private static final class MyReducer extends
+      Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
     private static final IntWritable SUM = new IntWritable();
 
     @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context)
+    public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      // Sum up values.
       Iterator<IntWritable> iter = values.iterator();
       int sum = 0;
       while (iter.hasNext()) {
         sum += iter.next().get();
       }
+
       SUM.set(sum);
       context.write(key, SUM);
+    }
+  }
+
+  private static final class MyPartitioner extends Partitioner<PairOfStrings, IntWritable> {
+    @Override
+    public int getPartition(PairOfStrings key, IntWritable value, int numReduceTasks) {
+      return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
     }
   }
 
@@ -132,8 +107,8 @@ public class PairsPMI extends Configured implements Tool {
     @Option(name = "-reducers", metaVar = "[num]", usage = "number of reducers")
     int numReducers = 1;
 
-    @Option(name = "-imc", usage = "use in-mapper combining")
-    boolean imc = false;
+    @Option(name = "-window", metaVar = "[num]", usage = "cooccurrence window")
+    int window = 2;
   }
 
   /**
@@ -155,36 +130,37 @@ public class PairsPMI extends Configured implements Tool {
     LOG.info("Tool: " + PairsPMI.class.getSimpleName());
     LOG.info(" - input path: " + args.input);
     LOG.info(" - output path: " + args.output);
+    LOG.info(" - window: " + args.window);
     LOG.info(" - number of reducers: " + args.numReducers);
-    LOG.info(" - use in-mapper combining: " + args.imc);
 
-    Configuration conf = getConf();
-    Job job = Job.getInstance(conf);
+    Job job = Job.getInstance(getConf());
     job.setJobName(PairsPMI.class.getSimpleName());
     job.setJarByClass(PairsPMI.class);
+
+    // Delete the output directory if it exists already.
+    Path outputDir = new Path(args.output);
+    FileSystem.get(getConf()).delete(outputDir, true);
+
+    job.getConfiguration().setInt("window", args.window);
 
     job.setNumReduceTasks(args.numReducers);
 
     FileInputFormat.setInputPaths(job, new Path(args.input));
     FileOutputFormat.setOutputPath(job, new Path(args.output));
 
-    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputKeyClass(PairOfStrings.class);
     job.setMapOutputValueClass(IntWritable.class);
-    job.setOutputKeyClass(Text.class);
+    job.setOutputKeyClass(PairOfStrings.class);
     job.setOutputValueClass(IntWritable.class);
-    job.setOutputFormatClass(TextOutputFormat.class);
 
-    job.setMapperClass(args.imc ? MyMapperIMC.class : MyMapper.class);
+    job.setMapperClass(MyMapper.class);
     job.setCombinerClass(MyReducer.class);
     job.setReducerClass(MyReducer.class);
-
-    // Delete the output directory if it exists already.
-    Path outputDir = new Path(args.output);
-    FileSystem.get(conf).delete(outputDir, true);
+    job.setPartitionerClass(MyPartitioner.class);
 
     long startTime = System.currentTimeMillis();
     job.waitForCompletion(true);
-    LOG.info("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+    System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
     return 0;
   }
