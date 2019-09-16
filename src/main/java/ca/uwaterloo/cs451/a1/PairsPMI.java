@@ -77,7 +77,7 @@ public class PairsPMI extends Configured implements Tool {
   public static final class MyReducerCount extends Reducer<Text, IntWritable, Text, IntWritable> {
     // Reuse objects.
     private static final IntWritable SUM = new IntWritable();
-    private static final PairOfStrings PAIR = new Text();
+    private static final PairOfStrings PAIR = new PairOfStrings();
     private int totalCount = 0;
 
     @Override
@@ -251,9 +251,9 @@ public class PairsPMI extends Configured implements Tool {
     FileInputFormat.setInputPaths(job1, new Path(args.input));
     FileOutputFormat.setOutputPath(job1, new Path(intermediatePath));
 
-    job1.setMapOutputKeyClass(Text.class);
+    job1.setMapOutputKeyClass(PairOfStrings.class);
     job1.setMapOutputValueClass(IntWritable.class);
-    job1.setOutputKeyClass(Text.class);
+    job1.setOutputKeyClass(PairOfStrings.class);
     job1.setOutputValueClass(IntWritable.class);
     //set output format
     job1.setOutputFormatClass(TextOutputFormat.class);
