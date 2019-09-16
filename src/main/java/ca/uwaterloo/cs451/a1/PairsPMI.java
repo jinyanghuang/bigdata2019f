@@ -23,6 +23,7 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.pair.PairOfStrings;
 import tl.lin.data.pair.PairOfFloats;
+import tl.lin.data.pair.PairOfObjectDouble;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import java.io.IOException;
 import java.util.Iterator;
@@ -145,8 +146,8 @@ public class PairsPMI extends Configured implements Tool {
 //   }
 
   private static final class MyReducerPMI extends
-      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfFloats> {
-    private static final PairOfFloats VALUEPAIR = new PairOfFloats();
+      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfObjectDouble> {
+    private static final PairOfObjectDouble VALUEPAIR = new PairOfObjectDouble();
     private static int totalAppear;
 
     @Override
@@ -167,7 +168,7 @@ public class PairsPMI extends Configured implements Tool {
       float probX = wordTotal.get(key.getLeftElement()) / totalAppear;
       float probY = wordTotal.get(key.getRightElement()) / totalAppear;
 
-      float pmi = Math.log(probPair/(probX * probY));
+      double pmi = Math.log(probPair/(probX * probY));
       VALUEPAIR.set(sum,pmi);
 
     //   SUM.set(sum);
