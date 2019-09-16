@@ -24,7 +24,7 @@ import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.pair.PairOfStrings;
 import tl.lin.data.pair.PairOfFloats;
 import tl.lin.data.pair.PairOfObjectDouble;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -283,7 +283,7 @@ public class PairsPMI extends Configured implements Tool {
     job2.setMapOutputValueClass(IntWritable.class);
     job2.setOutputKeyClass(PairOfStrings.class);
     job2.setOutputValueClass(IntWritable.class);
-    job2.setInputFormatClass(SequenceFileInputFormat.class);
+    job2.setInputFormatClass(TextInputFormat.class);
     //set output format
     job2.setOutputFormatClass(TextOutputFormat.class);
 
