@@ -5,6 +5,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -118,7 +119,7 @@ public class PairsPMI extends Configured implements Tool {
         throws IOException, InterruptedException {
             
         if (key.getRightElement().equals("*")){
-            wordTotal.put(key.getLeftElement(), Integer.parseInt(value));
+            wordTotal.put(key.getLeftElement(), Integer.parseInt(value.toString()));
         }
 
         context.write(key, value);
@@ -145,7 +146,7 @@ public class PairsPMI extends Configured implements Tool {
 
   private static final class MyReducerPMI extends
       Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfFloats> {
-    private static final IntWritable SUM = new IntWritable();
+    private static final FloatWritable SUM = new IntWritable();
     private static final PairOfFloats VALUEPAIR = new PairOfFloats();
     private static final FloatWritable PMI = new FloatWritable();
     private static int totalAppear;
@@ -285,7 +286,7 @@ public class PairsPMI extends Configured implements Tool {
     job2.setMapOutputValueClass(IntWritable.class);
     job2.setOutputKeyClass(PairOfStrings.class);
     job2.setOutputValueClass(IntWritable.class);
-    job2.setInputFormatClass(SequenceInputFormat.class);
+    job2.setInputFormatClass(SequenceFileInputFormat.class);
     //set output format
     job2.setOutputFormatClass(TextOutputFormat.class);
 
@@ -294,7 +295,7 @@ public class PairsPMI extends Configured implements Tool {
     job2.setReducerClass(MyReducerPMI.class);
     job2.setPartitionerClass(MyPartitionerPMI.class);
 
-    long startTime = System.currentTimeMillis();
+//     long startTime = System.currentTimeMillis();
     job2.waitForCompletion(true);
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
