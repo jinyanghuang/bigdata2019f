@@ -95,14 +95,16 @@ public class PairsPMI extends Configured implements Tool {
       SUM.set(sum);
       context.write(key, SUM);
     }
-  }
-
+    
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         SUM.set(totalCount);
         PAIR.set("*","*");
         context.write(PAIR, SUM);
     }
+  }
+
+    
 
 //   private static final class MyMapperPMI extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
 //     private static final PairOfStrings PAIR = new PairOfStrings();
