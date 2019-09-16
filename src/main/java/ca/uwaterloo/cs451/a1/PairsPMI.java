@@ -37,7 +37,7 @@ public class PairsPMI extends Configured implements Tool {
 
     // Mapper: emits (token, 1) for every word occurrence.
     // first MapReduce counts the occurrences of all words.
-  public static final class MyMapperCount extends Mapper<LongWritable, Text, Text, IntWritable> {
+  public static final class MyMapperCount extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
     // Reuse objects to save overhead of object creation.
     private static final IntWritable ONE = new IntWritable(1);
     private static final PairOfStrings PAIR = new PairOfStrings();
@@ -75,7 +75,7 @@ public class PairsPMI extends Configured implements Tool {
     }
 
   // Reducer: sums up all the occurrences.
-  public static final class MyReducerCount extends Reducer<Text, IntWritable, Text, IntWritable> {
+  public static final class MyReducerCount extends Reducer<PairOfStrings, IntWritable, Text, IntWritable> {
     // Reuse objects.
     private static final IntWritable SUM = new IntWritable();
     private static final PairOfStrings PAIR = new PairOfStrings();
