@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 
 public class PairsPMI extends Configured implements Tool {
@@ -242,7 +243,7 @@ public class PairsPMI extends Configured implements Tool {
 
     // Delete the output directory if it exists already.
     Path intermediatePath = new Path("intermediate results");
-    FileSystem.get(getConf()).delete(outputDir, true);
+    FileSystem.get(getConf()).delete(intermediatePath, true);
 
     job1.getConfiguration().setInt("window", args.window);
 
@@ -263,7 +264,7 @@ public class PairsPMI extends Configured implements Tool {
     job1.setReducerClass(MyReducerCount.class);
 
     long startTime = System.currentTimeMillis();
-    job2.waitForCompletion(true);
+    job1.waitForCompletion(true);
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
 //     // second job
