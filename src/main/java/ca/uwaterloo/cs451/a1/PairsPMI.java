@@ -21,7 +21,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.pair.PairOfStrings;
-import tl.lin.data.pair.PairOfFloat;
+import tl.lin.data.pair.PairOfFloats;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import java.io.IOException;
 import java.util.Iterator;
@@ -144,9 +144,9 @@ public class PairsPMI extends Configured implements Tool {
 //   }
 
   private static final class MyReducerPMI extends
-      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfStrings> {
+      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfFloats> {
     private static final IntWritable SUM = new IntWritable();
-    private static final PairOfFloat VALUEPAIR = new PairOfFloat();
+    private static final PairOfFloats VALUEPAIR = new PairOfFloats();
     private static final FloatWritable PMI = new FloatWritable();
     private static int totalAppear;
 
