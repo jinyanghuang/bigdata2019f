@@ -21,7 +21,8 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.pair.PairOfStrings;
-
+import tl.lin.data.pair.PairOfFloat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
