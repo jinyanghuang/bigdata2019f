@@ -39,7 +39,7 @@ public class PairsPMI extends Configured implements Tool {
   public static final class MyMapperCount extends Mapper<LongWritable, Text, Text, IntWritable> {
     // Reuse objects to save overhead of object creation.
     private static final IntWritable ONE = new IntWritable(1);
-    private static final PairOfStrings PAIR = new Text();
+    private static final PairOfStrings PAIR = new PairOfStrings();
 
     @Override
     public void map(LongWritable key, Text value, Context context)
