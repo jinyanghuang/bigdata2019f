@@ -107,94 +107,84 @@ public class PairsPMI extends Configured implements Tool {
 
     
 
-//   private static final class MyMapperPMI extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
-//     private static final PairOfStrings PAIR = new PairOfStrings();
-//     private static final IntWritable ONE = new IntWritable(1);
+  private static final class MyMapperPMI extends Mapper<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+    private static final PairOfStrings PAIR = new PairOfStrings();
+    private static final IntWritable ONE = new IntWritable(1);
     
 
+    @Override
+    public void map(PairOfStrings key, IntWritable value, Context context)
+        throws IOException, InterruptedException {
+            
+        if (key.getRightElement().equals("*")){
+            wordTotal.put(key.getLeftElement(), Integer.parseInt(value));
+        }
+
+        context.write(key, value);
+
+    }
+  }
+
+//   private static final class MyCombinerPMI extends
+//       Reducer<PairOfStrings, FloatWritable, PairOfStrings, FloatWritable> {
+//     private static final FloatWritable SUM = new FloatWritable();
+
 //     @Override
-//     public void map(PairOfStrings key, IntWritable value, Context context)
+//     public void reduce(PairOfStrings key, Iterable<FloatWritable> values, Context context)
 //         throws IOException, InterruptedException {
-//     //   List<String> tokens = Tokenizer.tokenize(value.toString());
-
-//     //   for (int i = 0; i < tokens.size(); i++) {
-//     //     for (int j = 0; j < Math.min(40, tokens.size()); j++) {
-//     //       if (i == j) continue;
-//     //       PAIR.set(tokens.get(i), tokens.get(j));
-//     //       context.write(PAIR, ONE);
-//     //       PAIR.set(tokens.get(i), "*");
-//     //       context.write(PAIR, ONE);
-//     //     }
-//     //   }
-//         if (key.getRightElement().equals("*")){
-//             wordTotal.put(key.getLeftElement(), Integer.parseInt(value));
-//         }
-
-//         context.write(key, value);
-
-//     }
-//   }
-
-// //   private static final class MyCombinerPMI extends
-// //       Reducer<PairOfStrings, FloatWritable, PairOfStrings, FloatWritable> {
-// //     private static final FloatWritable SUM = new FloatWritable();
-
-// //     @Override
-// //     public void reduce(PairOfStrings key, Iterable<FloatWritable> values, Context context)
-// //         throws IOException, InterruptedException {
-// //       int sum = 0;
-// //       Iterator<FloatWritable> iter = values.iterator();
-// //       while (iter.hasNext()) {
-// //         sum += iter.next().get();
-// //       }
-// //       SUM.set(sum);
-// //       context.write(key, SUM);
-// //     }
-// //   }
-
-//   private static final class MyReducerPMI extends
-//       Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
-//     private static final IntWritable SUM = new IntWritable();
-//     private static final PairOfFloat VALUEPAIR = new PairOfFloat();
-//     private static final FloatWritable PMI = new FloatWritable();
-//     private static int totalAppear;
-
-//     @Override
-//     public void setup(Context context) {
-//         totalAppear = wordTotal.get("*");
-//     }
-
-//     @Override
-//     public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
-//         throws IOException, InterruptedException {
-//       Iterator<IntWritable> iter = values.iterator();
-//       float sum = 0.0f;
+//       int sum = 0;
+//       Iterator<FloatWritable> iter = values.iterator();
 //       while (iter.hasNext()) {
 //         sum += iter.next().get();
 //       }
-
-//       float probPair = sum / totalAppear;
-//       float probX = wordTotal.get(key.getLeftElement()) / totalAppear;
-//       float probY = wordTotal.get(key.getRightElement()) / totalAppear;
-
-//       float pmi = Math.log(probPair/(probX * probY));
 //       SUM.set(sum);
-//       PMI.set(pmi);
-//       VALUEPAIR.set(SUM,PMI);
-
-//     //   SUM.set(sum);
-//       context.write(key, VALUEPAIR);
+//       context.write(key, SUM);
 //     }
 //   }
+
+  private static final class MyReducerPMI extends
+      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfStrings> {
+    private static final IntWritable SUM = new IntWritable();
+    private static final PairOfFloat VALUEPAIR = new PairOfFloat();
+    private static final FloatWritable PMI = new FloatWritable();
+    private static int totalAppear;
+
+    @Override
+    public void setup(Context context) {
+        totalAppear = wordTotal.get("*");
+    }
+
+    @Override
+    public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
+        throws IOException, InterruptedException {
+      Iterator<IntWritable> iter = values.iterator();
+      float sum = 0.0f;
+      while (iter.hasNext()) {
+        sum += iter.next().get();
+      }
+
+      float probPair = sum / totalAppear;
+      float probX = wordTotal.get(key.getLeftElement()) / totalAppear;
+      float probY = wordTotal.get(key.getRightElement()) / totalAppear;
+
+      float pmi = Math.log(probPair/(probX * probY));
+      SUM.set(sum);
+      PMI.set(pmi);
+      VALUEPAIR.set(SUM,PMI);
+
+    //   SUM.set(sum);
+      context.write(key, VALUEPAIR);
+    }
+  }
 
   
 
-//   private static final class MyPartitionerPMI extends Partitioner<PairOfStrings, IntWritable> {
-//     @Override
-//     public int getPartition(PairOfStrings key, IntWritable value, int numReduceTasks) {
-//       return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
-//     }
-//   }
+  private static final class MyPartitionerPMI extends Partitioner<PairOfStrings, IntWritable> {
+    @Override
+    public int getPartition(PairOfStrings key, IntWritable value, int numReduceTasks) {
+      return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
+    }
+  }
 
   /**
    * Creates an instance of this tool.
@@ -242,7 +232,7 @@ public class PairsPMI extends Configured implements Tool {
     job1.setJarByClass(PairsPMI.class);
 
     // Delete the output directory if it exists already.
-    String intermediateDir = "intermediate results";
+    String intermediateDir = "intermediate";
     Path intermediatePath = new Path(intermediateDir);
     FileSystem.get(getConf()).delete(intermediatePath, true);
 
@@ -268,44 +258,44 @@ public class PairsPMI extends Configured implements Tool {
     job1.waitForCompletion(true);
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
-//     // second job
-//     LOG.info("Tool: " + PairsPMI.class.getSimpleName() + "calculate PMI");
-//     LOG.info(" - input path: " + args.input);
-//     LOG.info(" - output path: " + args.output);
-//     LOG.info(" - window: " + args.window);
-//     LOG.info(" - number of reducers: " + args.numReducers);
+    // second job
+    LOG.info("Tool: " + PairsPMI.class.getSimpleName() + "calculate PMI");
+    LOG.info(" - input path: " + args.input);
+    LOG.info(" - output path: " + args.output);
+    LOG.info(" - window: " + args.window);
+    LOG.info(" - number of reducers: " + args.numReducers);
 
-//     Job job2 = Job.getInstance(getConf());
-//     job2.setJobName(PairsPMI.class.getSimpleName()+"PMICalculation");
-//     job2.setJarByClass(PairsPMI.class);
+    Job job2 = Job.getInstance(getConf());
+    job2.setJobName(PairsPMI.class.getSimpleName()+"PMICalculation");
+    job2.setJarByClass(PairsPMI.class);
 
-//     // Delete the output directory if it exists already.
-//     Path outputDir = new Path(args.output);
-//     FileSystem.get(getConf()).delete(outputDir, true);
+    // Delete the output directory if it exists already.
+    Path outputDir = new Path(args.output);
+    FileSystem.get(getConf()).delete(outputDir, true);
 
-//     job2.getConfiguration().setInt("window", args.window);
+    job2.getConfiguration().setInt("window", args.window);
 
-//     job2.setNumReduceTasks(args.numReducers);
+    job2.setNumReduceTasks(args.numReducers);
 
-//     FileInputFormat.setInputPaths(job2, new Path(intermediatePath));
-//     FileOutputFormat.setOutputPath(job2, new Path(args.output));
+    FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
+    FileOutputFormat.setOutputPath(job2, new Path(args.output));
 
-//     job2.setMapOutputKeyClass(PairOfStrings.class);
-//     job2.setMapOutputValueClass(IntWritable.class);
-//     job2.setOutputKeyClass(PairOfStrings.class);
-//     job2.setOutputValueClass(IntWritable.class);
-//     job2.setInputFormatClass(SequenceInputFormat.class);
-//     //set output format
-//     job2.setOutputFormatClass(TextOutputFormat.class);
+    job2.setMapOutputKeyClass(PairOfStrings.class);
+    job2.setMapOutputValueClass(IntWritable.class);
+    job2.setOutputKeyClass(PairOfStrings.class);
+    job2.setOutputValueClass(IntWritable.class);
+    job2.setInputFormatClass(SequenceInputFormat.class);
+    //set output format
+    job2.setOutputFormatClass(TextOutputFormat.class);
 
-//     job2.setMapperClass(MyMapperPMI.class);
-//     // job2.setCombinerClass(MyCombinerPMI.class);
-//     job2.setReducerClass(MyReducerPMI.class);
-//     job2.setPartitionerClass(MyPartitionerPMI.class);
+    job2.setMapperClass(MyMapperPMI.class);
+    // job2.setCombinerClass(MyCombinerPMI.class);
+    job2.setReducerClass(MyReducerPMI.class);
+    job2.setPartitionerClass(MyPartitionerPMI.class);
 
-//     long startTime = System.currentTimeMillis();
-//     job2.waitForCompletion(true);
-//     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+    long startTime = System.currentTimeMillis();
+    job2.waitForCompletion(true);
+    System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
     return 0;
   }
