@@ -58,8 +58,8 @@ public class PairsPMI extends Configured implements Tool {
         }
     }
 
-   private static final class MyCombinerCount extends Reducer<PairOfStrings, IntWritable, PairOfStrings, FloatWritable> {
-        private static final FloatWritable SUM = new FloatWritable();
+   private static final class MyCombinerCount extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+        private static final IntWritable SUM = new IntWritable();
 
         @Override
         public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
