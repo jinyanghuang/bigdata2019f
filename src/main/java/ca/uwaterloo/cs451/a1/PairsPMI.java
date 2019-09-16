@@ -25,6 +25,9 @@ import tl.lin.data.pair.PairOfStrings;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.hadoop.io.FloatWritable;
 
 
 public class PairsPMI extends Configured implements Tool {
