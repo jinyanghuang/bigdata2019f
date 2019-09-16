@@ -58,11 +58,11 @@ public class PairsPMI extends Configured implements Tool {
         }
     }
 
-   private static final class MyCombinerCount extends Reducer<PairOfStrings, FloatWritable, PairOfStrings, FloatWritable> {
+   private static final class MyCombinerCount extends Reducer<PairOfStrings, IntWritable, PairOfStrings, FloatWritable> {
         private static final FloatWritable SUM = new FloatWritable();
 
         @Override
-        public void reduce(PairOfStrings key, Iterable<FloatWritable> values, Context context)
+        public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
             int sum = 0;
             Iterator<FloatWritable> iter = values.iterator();
@@ -242,7 +242,8 @@ public class PairsPMI extends Configured implements Tool {
     job1.setJarByClass(PairsPMI.class);
 
     // Delete the output directory if it exists already.
-    Path intermediatePath = new Path("intermediate results");
+    String intermediateDir = "intermediate results";
+    Path intermediatePath = new Path(intermediateDir);
     FileSystem.get(getConf()).delete(intermediatePath, true);
 
     job1.getConfiguration().setInt("window", args.window);
@@ -250,7 +251,7 @@ public class PairsPMI extends Configured implements Tool {
     job1.setNumReduceTasks(args.numReducers);
 
     FileInputFormat.setInputPaths(job1, new Path(args.input));
-    FileOutputFormat.setOutputPath(job1, intermediatePath);
+    FileOutputFormat.setOutputPath(job1, new Path(intermediateDir));
 
     job1.setMapOutputKeyClass(PairOfStrings.class);
     job1.setMapOutputValueClass(IntWritable.class);
