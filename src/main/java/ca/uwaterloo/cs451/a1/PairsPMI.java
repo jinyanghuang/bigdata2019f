@@ -146,9 +146,7 @@ public class PairsPMI extends Configured implements Tool {
 
   private static final class MyReducerPMI extends
       Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfFloats> {
-    private static final FloatWritable SUM = new IntWritable();
     private static final PairOfFloats VALUEPAIR = new PairOfFloats();
-    private static final FloatWritable PMI = new FloatWritable();
     private static int totalAppear;
 
     @Override
@@ -170,9 +168,7 @@ public class PairsPMI extends Configured implements Tool {
       float probY = wordTotal.get(key.getRightElement()) / totalAppear;
 
       float pmi = Math.log(probPair/(probX * probY));
-      SUM.set(sum);
-      PMI.set(pmi);
-      VALUEPAIR.set(SUM,PMI);
+      VALUEPAIR.set(sum,pmi);
 
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
