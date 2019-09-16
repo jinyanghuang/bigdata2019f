@@ -75,7 +75,7 @@ public class PairsPMI extends Configured implements Tool {
     }
 
   // Reducer: sums up all the occurrences.
-  public static final class MyReducerCount extends Reducer<PairOfStrings, IntWritable, Text, IntWritable> {
+  public static final class MyReducerCount extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
     // Reuse objects.
     private static final IntWritable SUM = new IntWritable();
     private static final PairOfStrings PAIR = new PairOfStrings();
@@ -250,7 +250,7 @@ public class PairsPMI extends Configured implements Tool {
     job1.setNumReduceTasks(args.numReducers);
 
     FileInputFormat.setInputPaths(job1, new Path(args.input));
-    FileOutputFormat.setOutputPath(job1, new Path(intermediatePath));
+    FileOutputFormat.setOutputPath(job1, intermediatePath);
 
     job1.setMapOutputKeyClass(PairOfStrings.class);
     job1.setMapOutputValueClass(IntWritable.class);
