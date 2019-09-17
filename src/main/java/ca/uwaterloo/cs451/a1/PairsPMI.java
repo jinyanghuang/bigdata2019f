@@ -26,7 +26,7 @@ import tl.lin.data.pair.PairOfFloats;
 import tl.lin.data.pair.PairOfObjectDouble;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.ouput.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
