@@ -256,8 +256,8 @@ public class PairsPMI extends Configured implements Tool {
     LOG.info("Tool: " + PairsPMI.class.getSimpleName() + "calculate PMI");
     LOG.info(" - input path: " + args.input);
     LOG.info(" - output path: " + args.output);
-    LOG.info(" - window: " + args.window);
     LOG.info(" - number of reducers: " + args.numReducers);
+    LOG.info(" - number of threshold: " + args.numThreshold);
 
     Job job2 = Job.getInstance(getConf());
     job2.setJobName(PairsPMI.class.getSimpleName()+"PMICalculation");
