@@ -25,6 +25,8 @@ import tl.lin.data.pair.PairOfStrings;
 import tl.lin.data.pair.PairOfFloats;
 import tl.lin.data.pair.PairOfObjectDouble;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.ouput.SequenceFileOutputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -110,23 +112,27 @@ public class PairsPMI extends Configured implements Tool {
 
     
 
-  private static final class MyMapperPMI extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
+  private static final class MyMapperPMI extends Mapper<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
     private static final PairOfStrings PAIR = new PairOfStrings();
     private static final IntWritable COUNT = new IntWritable();
     
 
     @Override
-    public void map(LongWritable key, Text value, Context context)
+    public void map(PairOfStrings key, IntWritable value, Context context)
         throws IOException, InterruptedException {
         
-            String[] tokens = value.toString().split("[ ,()]+");
-        if (tokens[2].trim().equals("*")){
-            wordTotal.put(tokens[1].trim(), Integer.parseInt(tokens[3].trim()));
-        }
+        //     String[] tokens = value.toString().split("[ ,()]+");
+        // if (tokens[2].equals("*")){
+        //     wordTotal.put(tokens[1], Integer.parseInt(tokens(3)));
+        // }
 
-        PAIR.set(tokens[1].trim(),tokens[2].trim());
-        COUNT.set(Integer.parseInt(tokens[3].trim()));
-        context.write(PAIR, COUNT);
+        // PAIR.set(tokens[1],tokens[2]);
+        // COUNT.set(tokens[3]);
+        // context.write(PAIR, COUNT);
+        if (key.getRightElement().equals("*")){
+            wordTotal.put(key.getLeftElement(),value.get());
+        }
+        context.write(key, value);
 
     }
   }
@@ -250,7 +256,7 @@ public class PairsPMI extends Configured implements Tool {
     job1.setOutputKeyClass(PairOfStrings.class);
     job1.setOutputValueClass(IntWritable.class);
     //set output format
-    job1.setOutputFormatClass(TextOutputFormat.class);
+    job1.setOutputFormatClass(SequenceFileOutputFormat.class);
 
     job1.setMapperClass(MyMapperCount.class);
     job1.setCombinerClass(MyCombinerCount.class);
@@ -286,7 +292,7 @@ public class PairsPMI extends Configured implements Tool {
     job2.setMapOutputValueClass(IntWritable.class);
     job2.setOutputKeyClass(PairOfStrings.class);
     job2.setOutputValueClass(IntWritable.class);
-    job2.setInputFormatClass(TextInputFormat.class);
+    job2.setInputFormatClass(SequenceFileInputFormat.class);
     //set output format
     job2.setOutputFormatClass(TextOutputFormat.class);
 
