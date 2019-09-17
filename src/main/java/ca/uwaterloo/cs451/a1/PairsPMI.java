@@ -120,12 +120,12 @@ public class PairsPMI extends Configured implements Tool {
         throws IOException, InterruptedException {
         
             String[] tokens = value.toString().split("[ ,()]+");
-        if (tokens[2].equals("*")){
-            wordTotal.put(tokens[1], Integer.parseInt(tokens[3]));
+        if (tokens[2].trim().equals("*")){
+            wordTotal.put(tokens[1].trim(), Integer.parseInt(tokens[3].trim()));
         }
 
-        PAIR.set(tokens[1],tokens[2]);
-        COUNT.set(Integer.parseInt(tokens[3]));
+        PAIR.set(tokens[1].trim(),tokens[2].trim());
+        COUNT.set(Integer.parseInt(tokens[3].trim()));
         context.write(PAIR, COUNT);
 
     }
