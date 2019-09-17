@@ -63,6 +63,7 @@ public class PairsPMI extends Configured implements Tool {
           PAIR.set("*","*");
           context.write(PAIR, ONE);
         }
+        
     }
 
    private static final class MyCombinerCount extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
@@ -157,12 +158,11 @@ public class PairsPMI extends Configured implements Tool {
         sum += iter.next().get();
       }
 
-      if(sum>= threshold){
-      float probPair = sum / totalAppear;
-      float probX = wordTotal.get(key.getLeftElement()) / totalAppear;
-      float probY = wordTotal.get(key.getRightElement()) / totalAppear;
+      if(sum>= threshold && !key.getRightElement().equals("*")){
+      float numX = wordTotal.get(key.getLeftElement());
+      float numY = wordTotal.get(key.getRightElement());
 
-      double pmi = Math.log(probPair/(probX * probY));
+      double pmi = Math.log(sum * totalAppear/(numX * numY));
       VALUEPAIR.set(sum,pmi);
 
     //   SUM.set(sum);
