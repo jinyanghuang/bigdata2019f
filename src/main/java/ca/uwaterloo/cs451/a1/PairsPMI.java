@@ -121,11 +121,11 @@ public class PairsPMI extends Configured implements Tool {
         
             String[] tokens = value.toString().split("[ ,()]+");
         if (tokens[2].equals("*")){
-            wordTotal.put(tokens[1], Integer.parseInt(tokens(3)));
+            wordTotal.put(tokens[1], Integer.parseInt(tokens[3]));
         }
 
         PAIR.set(tokens[1],tokens[2]);
-        COUNT.set(tokens[3]);
+        COUNT.set(Integer.parseInt(tokens[3]));
         context.write(PAIR, COUNT);
 
     }
