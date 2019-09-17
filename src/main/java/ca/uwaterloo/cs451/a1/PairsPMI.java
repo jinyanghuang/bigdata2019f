@@ -26,7 +26,7 @@ import tl.lin.data.pair.PairOfFloats;
 import tl.lin.data.pair.PairOfObjectDouble;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.ouput.SequenceFileOutputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +60,8 @@ public class PairsPMI extends Configured implements Tool {
               context.write(PAIR, ONE);
             }
           }
+          PAIR.set("*","*");
+          context.write(PAIR, ONE);
         }
     }
 
@@ -84,7 +86,6 @@ public class PairsPMI extends Configured implements Tool {
     // Reuse objects.
     private static final IntWritable SUM = new IntWritable();
     private static final PairOfStrings PAIR = new PairOfStrings();
-    private int totalCount = 0;
 
     @Override
     public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
@@ -95,18 +96,8 @@ public class PairsPMI extends Configured implements Tool {
       while (iter.hasNext()) {
         sum += iter.next().get();
       }
-      if (key.getRightElement().equals("*")){
-        totalCount += sum;
-      }
       SUM.set(sum);
       context.write(key, SUM);
-    }
-    
-    @Override
-    public void cleanup(Context context) throws IOException, InterruptedException {
-        SUM.set(totalCount);
-        PAIR.set("*","*");
-        context.write(PAIR, SUM);
     }
   }
 
@@ -120,15 +111,6 @@ public class PairsPMI extends Configured implements Tool {
     @Override
     public void map(PairOfStrings key, IntWritable value, Context context)
         throws IOException, InterruptedException {
-        
-        //     String[] tokens = value.toString().split("[ ,()]+");
-        // if (tokens[2].equals("*")){
-        //     wordTotal.put(tokens[1], Integer.parseInt(tokens(3)));
-        // }
-
-        // PAIR.set(tokens[1],tokens[2]);
-        // COUNT.set(tokens[3]);
-        // context.write(PAIR, COUNT);
         if (key.getRightElement().equals("*")){
             wordTotal.put(key.getLeftElement(),value.get());
         }
@@ -158,10 +140,12 @@ public class PairsPMI extends Configured implements Tool {
       Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfObjectDouble> {
     private static final PairOfObjectDouble VALUEPAIR = new PairOfObjectDouble();
     private static int totalAppear;
+    private int threshold = 10;
 
     @Override
     public void setup(Context context) {
         totalAppear = wordTotal.get("*");
+        threshold = context.getConfiguration().getInt("threshold", 10);
     }
 
     @Override
@@ -173,15 +157,17 @@ public class PairsPMI extends Configured implements Tool {
         sum += iter.next().get();
       }
 
-      float probPair = sum ;
-      float probX = wordTotal.get(key.getLeftElement()) ;
-      float probY = wordTotal.get(key.getRightElement()) ;
+      if(sum>= threshold){
+      float probPair = sum / totalAppear;
+      float probX = wordTotal.get(key.getLeftElement()) / totalAppear;
+      float probY = wordTotal.get(key.getRightElement()) / totalAppear;
 
       double pmi = Math.log(probPair/(probX * probY));
       VALUEPAIR.set(sum,pmi);
 
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
+      }
     }
   }
 
@@ -209,8 +195,8 @@ public class PairsPMI extends Configured implements Tool {
     @Option(name = "-reducers", metaVar = "[num]", usage = "number of reducers")
     int numReducers = 1;
 
-    @Option(name = "-window", metaVar = "[num]", usage = "cooccurrence window")
-    int window = 2;
+    @Option(name = "-threshold", metaVar = "[num]", usage = "number of threshold")
+    int numThreshold = 10;
   }
 
   /**
@@ -232,8 +218,8 @@ public class PairsPMI extends Configured implements Tool {
     LOG.info("Tool: " + PairsPMI.class.getSimpleName() + "count word");
     LOG.info(" - input path: " + args.input);
     LOG.info(" - output path: " + args.output);
-    LOG.info(" - window: " + args.window);
     LOG.info(" - number of reducers: " + args.numReducers);
+    LOG.info(" - number of threshold: " + args.numThreshold);
 
     Job job1 = Job.getInstance(getConf());
     job1.setJobName(PairsPMI.class.getSimpleName()+"WordCount");
@@ -244,7 +230,7 @@ public class PairsPMI extends Configured implements Tool {
     Path intermediatePath = new Path(intermediateDir);
     FileSystem.get(getConf()).delete(intermediatePath, true);
 
-    job1.getConfiguration().setInt("window", args.window);
+    job1.getConfiguration().setInt("threshold", args.numThreshold);
 
     job1.setNumReduceTasks(args.numReducers);
 
