@@ -151,8 +151,8 @@ public class PairsPMI extends Configured implements Tool {
   }
 
   private static final class MyReducerPMI extends
-      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfFloats> {
-    private static final PairOfFloats VALUEPAIR = new PairOfFloats();
+      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfStrings> {
+    private static final PairOfStrings VALUEPAIR = new PairOfStrings();
     private static int totalAppear;
     private int threshold = 10;
 
@@ -166,7 +166,7 @@ public class PairsPMI extends Configured implements Tool {
     public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       Iterator<IntWritable> iter = values.iterator();
-      float sum = 0.0f;
+      int sum = 0;
       while (iter.hasNext()) {
         sum += iter.next().get();
       }
@@ -175,8 +175,8 @@ public class PairsPMI extends Configured implements Tool {
       float numX = wordTotal.get(key.getLeftElement());
       float numY = wordTotal.get(key.getRightElement());
 
-      float pmi = Math.log(sum * totalAppear/(numX * numY));
-      VALUEPAIR.set(pmi,sum);
+      double pmi = Math.log(sum * totalAppear/(numX * numY));
+      VALUEPAIR.set(Double.toString(pmi),Integet.toString(sum));
 
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
