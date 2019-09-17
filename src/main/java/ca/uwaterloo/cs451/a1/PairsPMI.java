@@ -267,8 +267,6 @@ public class PairsPMI extends Configured implements Tool {
     Path outputDir = new Path(args.output);
     FileSystem.get(getConf()).delete(outputDir, true);
 
-    job2.getConfiguration().setInt("window", args.window);
-
     job2.setNumReduceTasks(args.numReducers);
 
     FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
