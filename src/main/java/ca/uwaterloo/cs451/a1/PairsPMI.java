@@ -176,7 +176,7 @@ public class PairsPMI extends Configured implements Tool {
       float numY = wordTotal.get(key.getRightElement());
 
       double pmi = Math.log(sum * totalAppear/(numX * numY));
-      VALUEPAIR.set(Double.toString(pmi),Integet.toString(sum));
+      VALUEPAIR.set(Double.toString(pmi),Integer.toString(sum));
 
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
