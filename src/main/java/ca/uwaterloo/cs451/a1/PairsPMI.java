@@ -110,20 +110,23 @@ public class PairsPMI extends Configured implements Tool {
 
     
 
-  private static final class MyMapperPMI extends Mapper<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+  private static final class MyMapperPMI extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
     private static final PairOfStrings PAIR = new PairOfStrings();
-    private static final IntWritable ONE = new IntWritable(1);
+    private static final IntWritable COUNT = new IntWritable();
     
 
     @Override
-    public void map(PairOfStrings key, IntWritable value, Context context)
+    public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
-            
-        if (key.getRightElement().equals("*")){
-            wordTotal.put(key.getLeftElement(), Integer.parseInt(value.toString()));
+        
+            String[] tokens = value.toString().split("[ ,()]+");
+        if (tokens[2].equals("*")){
+            wordTotal.put(tokens[1], Integer.parseInt(tokens(3)));
         }
 
-        context.write(key, value);
+        PAIR.set(tokens[1],tokens[2]);
+        COUNT.set(tokens[3]);
+        context.write(PAIR, COUNT);
 
     }
   }
