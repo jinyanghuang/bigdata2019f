@@ -87,6 +87,12 @@ public class PairsPMI extends Configured implements Tool {
     // Reuse objects.
     private static final IntWritable SUM = new IntWritable();
     private static final PairOfStrings PAIR = new PairOfStrings();
+    private int threshold = 10;
+    @Override
+    public void setup(Context context) {
+        threshold = context.getConfiguration().getInt("threshold", 10);
+    }
+
 
     @Override
     public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
@@ -97,11 +103,18 @@ public class PairsPMI extends Configured implements Tool {
       while (iter.hasNext()) {
         sum += iter.next().get();
       }
-      SUM.set(sum);
-      context.write(key, SUM);
+      if(sum>=threshold){
+        SUM.set(sum);
+        context.write(key, SUM);
+      }
     }
   }
-
+  private static final class MyPartitionerCount extends Partitioner<PairOfStrings, IntWritable> {
+    @Override
+    public int getPartition(PairOfStrings key, IntWritable value, int numReduceTasks) {
+      return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
+    }
+  }
     
 
   private static final class MyMapperPMI extends Mapper<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
@@ -120,26 +133,26 @@ public class PairsPMI extends Configured implements Tool {
     }
   }
 
-//   private static final class MyCombinerPMI extends
-//       Reducer<PairOfStrings, FloatWritable, PairOfStrings, FloatWritable> {
-//     private static final FloatWritable SUM = new FloatWritable();
+  private static final class MyCombinerPMI extends
+      Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+    private static final IntWritable SUM = new IntWritable();
 
-//     @Override
-//     public void reduce(PairOfStrings key, Iterable<FloatWritable> values, Context context)
-//         throws IOException, InterruptedException {
-//       int sum = 0;
-//       Iterator<FloatWritable> iter = values.iterator();
-//       while (iter.hasNext()) {
-//         sum += iter.next().get();
-//       }
-//       SUM.set(sum);
-//       context.write(key, SUM);
-//     }
-//   }
+    @Override
+    public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
+        throws IOException, InterruptedException {
+      int sum = 0;
+      Iterator<IntWritable> iter = values.iterator();
+      while (iter.hasNext()) {
+        sum += iter.next().get();
+      }
+      SUM.set(sum);
+      context.write(key, SUM);
+    }
+  }
 
   private static final class MyReducerPMI extends
-      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfObjectDouble> {
-    private static final PairOfObjectDouble VALUEPAIR = new PairOfObjectDouble();
+      Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfFloats> {
+    private static final PairOfFloats VALUEPAIR = new PairOfFloats();
     private static int totalAppear;
     private int threshold = 10;
 
@@ -162,8 +175,8 @@ public class PairsPMI extends Configured implements Tool {
       float numX = wordTotal.get(key.getLeftElement());
       float numY = wordTotal.get(key.getRightElement());
 
-      double pmi = Math.log(sum * totalAppear/(numX * numY));
-      VALUEPAIR.set(sum,pmi);
+      float pmi = Math.log(sum * totalAppear/(numX * numY));
+      VALUEPAIR.set(pmi,sum);
 
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
@@ -247,6 +260,7 @@ public class PairsPMI extends Configured implements Tool {
     job1.setMapperClass(MyMapperCount.class);
     job1.setCombinerClass(MyCombinerCount.class);
     job1.setReducerClass(MyReducerCount.class);
+    job1.setPartitionerClass(MyPartitionerCount.class);
 
     long startTime = System.currentTimeMillis();
     job1.waitForCompletion(true);
@@ -281,7 +295,7 @@ public class PairsPMI extends Configured implements Tool {
     job2.setOutputFormatClass(TextOutputFormat.class);
 
     job2.setMapperClass(MyMapperPMI.class);
-    // job2.setCombinerClass(MyCombinerPMI.class);
+    job2.setCombinerClass(MyCombinerPMI.class);
     job2.setReducerClass(MyReducerPMI.class);
     job2.setPartitionerClass(MyPartitionerPMI.class);
 
