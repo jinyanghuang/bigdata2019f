@@ -173,9 +173,9 @@ public class PairsPMI extends Configured implements Tool {
         sum += iter.next().get();
       }
 
-      float probPair = sum / totalAppear;
-      float probX = wordTotal.get(key.getLeftElement()) / totalAppear;
-      float probY = wordTotal.get(key.getRightElement()) / totalAppear;
+      float probPair = sum ;
+      float probX = wordTotal.get(key.getLeftElement()) ;
+      float probY = wordTotal.get(key.getRightElement()) ;
 
       double pmi = Math.log(probPair/(probX * probY));
       VALUEPAIR.set(sum,pmi);
