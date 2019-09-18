@@ -75,6 +75,8 @@ public class PairsPMI extends Configured implements Tool {
             String word = tokens.get(i);
             if (!wordAppear.contains(word)) {
                 wordAppear.add(word); 
+                PAIR.set(word,"*");
+                context.write(PAIR, ONE);
             }
         }
         for (int i = 0; i < wordAppear.size(); i++) {
@@ -82,8 +84,7 @@ public class PairsPMI extends Configured implements Tool {
                 if (i == j) continue;
                 PAIR.set(wordAppear.get(i), wordAppear.get(j));
                 context.write(PAIR, ONE);
-                PAIR.set(wordAppear.get(i),"*");
-                context.write(PAIR, ONE);
+               
             }
 
         }
