@@ -86,6 +86,10 @@ public class StripesPMI extends Configured implements Tool {
 
   private static final class MyReducerCount extends Reducer<Text, HMapStIW, Text, HMapStIW> {
     @Override
+    public void setup(Context context) {
+        threshold = context.getConfiguration().getInt("threshold", 10);
+    }
+    @Override
     public void reduce(Text key, Iterable<HMapStIW> values, Context context)
         throws IOException, InterruptedException {
       Iterator<HMapStIW> iter = values.iterator();
@@ -94,8 +98,10 @@ public class StripesPMI extends Configured implements Tool {
       while (iter.hasNext()) {
         map.plus(iter.next());
       }
-      wordTotal.put(key.toString(), map.get("*"));
-      context.write(key, map);
+      if(map.get("*")>=threshold){
+        wordTotal.put(key.toString(), map.get("*"));
+        context.write(key, map);
+      }
     }
   }
 
