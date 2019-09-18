@@ -193,7 +193,7 @@ private static final class MyCombinerPMI extends
     }
 }
 
-private static final class MyReducerPair extends
+private static final class MyReducerPMI extends
         Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings> {
     private int threshold = 10;
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
@@ -217,8 +217,8 @@ private static final class MyReducerPair extends
             if (count >= threshold) {
                 double numOfX = wordTotal.get(key.toString());
                 double numOfY = wordTotal.get(word);
-                double PMI = Math.log10((count * totalLines) / (numOfX * numOfY));
-                VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
+                double PMI = Math.log10((count * totalLine) / (numOfX * numOfY));
+                VALUEPAIR.set(Double.toString(PMI),Integer.toString(count));
                 KEYPAIR.set(key.toString(),word);
                 context.write(KEYPAIR,VALUEPAIR);
             }
