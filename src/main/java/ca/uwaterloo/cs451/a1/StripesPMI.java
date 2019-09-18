@@ -54,18 +54,19 @@ public class StripesPMI extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
       List<String> tokens = Tokenizer.tokenize(value.toString());
-     // ArrayList<String> wordAppearOutter = new ArrayList<String>();
-      for (int i = 0; i < tokens.size(); i++) {
-       // if (wordAppearOutter.contains(tokens.get(i))) continue;
-        //wordAppearOutter.add(tokens.get(i));
+      ArrayList<String> wordAppearOutter = new ArrayList<String>();
+      for (int i = 0; i < Math.min(40, tokens.size()); i++) {
+        if (wordAppearOutter.contains(tokens.get(i))) continue;
+        wordAppearOutter.add(tokens.get(i));
+        MAP.increment("*");
         MAP.clear();
         for (int j = 0; j < Math.min(40, tokens.size()); j++) {
           if (i == j) continue;
-          //if (tokens.get(i).equals(tokens.get(j))) continue;
-          //if (MAP.containsKey(tokens.get(j))) continue;
+          if (tokens.get(i).equals(tokens.get(j))) continue;
+          if (MAP.containsKey(tokens.get(j))) continue;
           MAP.increment(tokens.get(j));
-	  MAP.increment("*");
         }
+        
         KEY.set(tokens.get(i));
         context.write(KEY, MAP);
       }
@@ -120,7 +121,7 @@ public class StripesPMI extends Configured implements Tool {
             if(count >= threshold){
                 int numX = wordTotal.get(key.toString());
                 int numY = wordTotal.get(term);
-                double pmi = Math.log(count * totalLine/(numX * numY));
+                double pmi = Math.log10(count * totalLine/(numX * numY));
                 VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
                 KEYPAIR.set(key.toString(),term);
                 context.write(KEYPAIR,VALUEPAIR);
