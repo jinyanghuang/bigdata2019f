@@ -214,49 +214,49 @@ public class StripesPMI extends Configured implements Tool {
     job1.setCombinerClass(MyReducerCount.class);
     job1.setReducerClass(MyReducerCount.class);
     //set output format
-    job1.setOutputFormatClass(SequenceFileOutputFormat.class);
+    job1.setOutputFormatClass(TextOutputFormat.class);
 
     long startTime = System.currentTimeMillis();
     job1.waitForCompletion(true);
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
-    //second job
-    LOG.info("Tool: " + StripesPMI.class.getSimpleName());
-    LOG.info(" - input path: " + args.input);
-    LOG.info(" - output path: " + args.output);
-    LOG.info(" - number of reducers: " + args.numReducers);
-    LOG.info(" - number of threshold: " + args.numThreshold);
+//     //second job
+//     LOG.info("Tool: " + StripesPMI.class.getSimpleName());
+//     LOG.info(" - input path: " + args.input);
+//     LOG.info(" - output path: " + args.output);
+//     LOG.info(" - number of reducers: " + args.numReducers);
+//     LOG.info(" - number of threshold: " + args.numThreshold);
 
-    Job job2 = Job.getInstance(getConf());
-    job2.setJobName(StripesPMI.class.getSimpleName());
-    job2.setJarByClass(StripesPMI.class);
+//     Job job2 = Job.getInstance(getConf());
+//     job2.setJobName(StripesPMI.class.getSimpleName());
+//     job2.setJarByClass(StripesPMI.class);
 
-    // Delete the output directory if it exists already.
-    Path outputDir = new Path(args.output);
-    FileSystem.get(getConf()).delete(outputDir, true);
+//     // Delete the output directory if it exists already.
+//     Path outputDir = new Path(args.output);
+//     FileSystem.get(getConf()).delete(outputDir, true);
 
-    job2.getConfiguration().setInt("threshold", args.numThreshold);
+//     job2.getConfiguration().setInt("threshold", args.numThreshold);
 
-    job2.setNumReduceTasks(args.numReducers);
+//     job2.setNumReduceTasks(args.numReducers);
 
-    FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
-    FileOutputFormat.setOutputPath(job2, new Path(args.output));
+//     FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
+//     FileOutputFormat.setOutputPath(job2, new Path(args.output));
 
-    job2.setInputFormatClass(SequenceFileInputFormat.class);
-    //set output format
-    job2.setOutputFormatClass(TextOutputFormat.class);
+//     job2.setInputFormatClass(SequenceFileInputFormat.class);
+//     //set output format
+//     job2.setOutputFormatClass(TextOutputFormat.class);
 
-    job2.setMapOutputKeyClass(Text.class);
-    job2.setMapOutputValueClass(HMapStIW.class);
-    job2.setOutputKeyClass(PairOfStrings.class);
-    job2.setOutputValueClass(PairOfStrings.class);
+//     job2.setMapOutputKeyClass(Text.class);
+//     job2.setMapOutputValueClass(HMapStIW.class);
+//     job2.setOutputKeyClass(PairOfStrings.class);
+//     job2.setOutputValueClass(PairOfStrings.class);
 
-    job2.setMapperClass(MyMapperPMI.class);
-    job2.setCombinerClass(MyReducerPMI.class);
-    job2.setReducerClass(MyReducerPMI.class);
+//     job2.setMapperClass(MyMapperPMI.class);
+//     job2.setCombinerClass(MyReducerPMI.class);
+//     job2.setReducerClass(MyReducerPMI.class);
 
-    job2.waitForCompletion(true);
-    System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+//     job2.waitForCompletion(true);
+//     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
     
     return 0;
   }
