@@ -36,7 +36,7 @@ import tl.lin.data.pair.PairOfStrings;
 public class StripesPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(StripesPMI.class);
   private static int totalLine = 0;
-  private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
+  private static HMapStIW wordTotal = new HMapStIW();
 
 
   private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, HMapStIW> {
@@ -72,6 +72,7 @@ public class StripesPMI extends Configured implements Tool {
             }
             for (int i = 0; i < wordAppear.size(); i++) {
                 MAP.clear();
+                wordTotal.increment(wordAppear.get(i));
                 MAP.increment("*");
                 KEY.set(wordAppear.get(i));
                 for (int j = 0; j < wordAppear.size(); j++) {
@@ -95,7 +96,6 @@ public class StripesPMI extends Configured implements Tool {
         map.plus(iter.next());
       }
       
-
       context.write(key, map);
     }
   }
@@ -104,7 +104,7 @@ public class StripesPMI extends Configured implements Tool {
       @Override
       public void map (Text key, HMapStIW map, Context context)
         throws IOException, InterruptedException{
-        wordTotal.put(key.toString(), map.get("*"));
+        // wordTotal.put(key.toString(), map.get("*"));
         context.write(key, map);
       }
   }
