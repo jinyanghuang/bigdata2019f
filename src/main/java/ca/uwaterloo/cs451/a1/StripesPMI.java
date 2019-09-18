@@ -68,11 +68,11 @@ public class StripesPMI extends Configured implements Tool {
                 String word = tokens.get(i);
                 if (!wordAppear.contains(word)) {
                     wordAppear.add(word); //check if 1 can be Integer
+                    wordTotal.increment(wordAppear.get(i));
                 }
             }
             for (int i = 0; i < wordAppear.size(); i++) {
                 MAP.clear();
-                wordTotal.increment(wordAppear.get(i));
                 MAP.increment("*");
                 KEY.set(wordAppear.get(i));
                 for (int j = 0; j < wordAppear.size(); j++) {
