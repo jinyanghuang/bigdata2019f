@@ -36,7 +36,7 @@ import tl.lin.data.pair.PairOfStrings;
 public class StripesPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(StripesPMI.class);
   private static int totalLine = 0;
-  private static HMapStIW wordTotal = new HMapStIW();
+  private static MAP<String,Integer> wordTotal = new HashMap<String,Integer>();
 
 
   private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, HMapStIW> {
@@ -68,7 +68,6 @@ public class StripesPMI extends Configured implements Tool {
                 String word = tokens.get(i);
                 if (!wordAppear.contains(word)) {
                     wordAppear.add(word); //check if 1 can be Integer
-                    wordTotal.increment(wordAppear.get(i));
                 }
             }
             for (int i = 0; i < wordAppear.size(); i++) {
@@ -95,7 +94,7 @@ public class StripesPMI extends Configured implements Tool {
       while (iter.hasNext()) {
         map.plus(iter.next());
       }
-      
+      wordTotal.put(key.toString(), map.get("*"));
       context.write(key, map);
     }
   }
