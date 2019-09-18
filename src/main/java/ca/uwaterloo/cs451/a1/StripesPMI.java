@@ -43,13 +43,6 @@ public class StripesPMI extends Configured implements Tool {
     private static final HMapStIW MAP = new HMapStIW();
     private static final Text KEY = new Text();
     
-    
-
-    @Override
-    public void setup(Context context) {
-      
-    }
-
     @Override
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
@@ -101,7 +94,7 @@ public class StripesPMI extends Configured implements Tool {
       while (iter.hasNext()) {
         map.plus(iter.next());
       }
-      wordTotal.put(key.toString(), map.get("*"));
+      
 
       context.write(key, map);
     }
@@ -111,6 +104,7 @@ public class StripesPMI extends Configured implements Tool {
       @Override
       public void map (Text key, HMapStIW map, Context context)
         throws IOException, InterruptedException{
+        wordTotal.put(key.toString(), map.get("*"));
         context.write(key, map);
       }
   }
