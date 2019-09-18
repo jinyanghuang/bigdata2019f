@@ -40,7 +40,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 public class PairsPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(PairsPMI.class);
   private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
-  private int totalLine = 0;
+  private static int totalLine = 0;
 
     // Mapper: emits (token, 1) for every word occurrence.
     // first MapReduce counts the occurrences of all words.
