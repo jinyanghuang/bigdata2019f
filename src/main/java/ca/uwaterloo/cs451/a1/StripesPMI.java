@@ -107,125 +107,125 @@ public class StripesPMI extends Configured implements Tool {
     }
   }
 
-//   private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
-//       @Override
-//       public void map (Text key, HMapStIW map, Context context)
-//         throws IOException, InterruptedException{
-//         context.write(key, map);
-//       }
-//   }
-//   private static final class MyReducer extends Reducer<Text, HMapStFW, Text, HMapStFW> {
-//     @Override
-//     public void reduce(Text key, Iterable<HMapStFW> values, Context context)
-//         throws IOException, InterruptedException {
-//       Iterator<HMapStFW> iter = values.iterator();
-//       HMapStFW map = new HMapStFW();
-
-//       while (iter.hasNext()) {
-//         map.plus(iter.next());
-//       }
-
-//       float sum = 0.0f;
-//       for (MapKF.Entry<String> entry : map.entrySet()) {
-//         sum += entry.getValue();
-//       }
-//       for (String term : map.keySet()) {
-//         map.put(term, map.get(term) / sum);
-//       }
-
-//       context.write(key, map);
-//     }
-//   }
-//   private static final class MyReducerPMI extends Reducer<Text, HMapStIW, Text, PairOfStrings>{
-//     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
-//     private static final PairOfStrings KEYPAIR = new PairOfStrings();
-//     private int threshold = 10;
-//     @Override
-//     public void setup(Context context) {
-//         threshold = context.getConfiguration().getInt("threshold", 10);
-//     }
-//     @Override
-//       public void reduce (Text key, Iterable<HMapStIW> values, Context context) 
-//         throws IOException, InterruptedException{
-//         Iterator<HMapStIW> iter = values.iterator();
-//         HMapStIW map = new HMapStIW();
-
-//         while(iter.hasNext()){
-//             map.plus(iter.next());
-//         }
-
-//         for (String term : map.keySet()) {
-//             int count = map.get(term);
-//             if(count >= threshold){
-//                 int numX = wordTotal.get(key.toString());
-//                 int numY = wordTotal.get(term);
-//                 double pmi = Math.log10(count * totalLine/(numX * numY));
-//                 VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
-//                 KEYPAIR.set(key.toString(),term);
-//                 context.write(KEYPAIR,VALUEPAIR);
-//             }
-//         }
-//       }
-
-//   }
-private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
-    
-    @Override
-    public void map(Text key, HMapStIW value, Context context)
-            throws IOException, InterruptedException {
-        context.write(key, value);
-    }
-}
-
-private static final class MyCombinerPMI extends
-        Reducer<Text, HMapStIW, Text, HMapStIW> {
-    private static final IntWritable SUM = new IntWritable();
-
-    @Override
-    public void reduce(Text key, Iterable<HMapStIW> values, Context context)
-            throws IOException, InterruptedException {
-        Iterator<HMapStIW> iter = values.iterator();
-        HMapStIW map = new HMapStIW();
-        while (iter.hasNext()) {
-            map.plus(iter.next());
-        }
+  private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
+      @Override
+      public void map (Text key, HMapStIW map, Context context)
+        throws IOException, InterruptedException{
         context.write(key, map);
-    }
-}
+      }
+  }
+  private static final class MyReducer extends Reducer<Text, HMapStFW, Text, HMapStFW> {
+    @Override
+    public void reduce(Text key, Iterable<HMapStFW> values, Context context)
+        throws IOException, InterruptedException {
+      Iterator<HMapStFW> iter = values.iterator();
+      HMapStFW map = new HMapStFW();
 
-private static final class MyReducerPMI extends
-        Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings> {
-    private int threshold = 10;
+      while (iter.hasNext()) {
+        map.plus(iter.next());
+      }
+
+      float sum = 0.0f;
+      for (MapKF.Entry<String> entry : map.entrySet()) {
+        sum += entry.getValue();
+      }
+      for (String term : map.keySet()) {
+        map.put(term, map.get(term) / sum);
+      }
+
+      context.write(key, map);
+    }
+  }
+  private static final class MyReducerPMI extends Reducer<Text, HMapStIW, Text, PairOfStrings>{
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
     private static final PairOfStrings KEYPAIR = new PairOfStrings();
+    private int threshold = 10;
     @Override
-    public void setup(Context context) throws IOException {
+    public void setup(Context context) {
         threshold = context.getConfiguration().getInt("threshold", 10);
     }
-
     @Override
-    public void reduce(Text key, Iterable<HMapStIW> values, Context context)
-            throws IOException, InterruptedException {
+      public void reduce (Text key, Iterable<HMapStIW> values, Context context) 
+        throws IOException, InterruptedException{
         Iterator<HMapStIW> iter = values.iterator();
         HMapStIW map = new HMapStIW();
-        while (iter.hasNext()) {
+
+        while(iter.hasNext()){
             map.plus(iter.next());
         }
 
-        for (String word : map.keySet()) {
-            int count = map.get(word);
-            if (count >= threshold) {
-                double numOfX = wordTotal.get(key.toString());
-                double numOfY = wordTotal.get(word);
-                double PMI = Math.log10((count * totalLine) / (numOfX * numOfY));
-                VALUEPAIR.set(Double.toString(PMI),Integer.toString(count));
-                KEYPAIR.set(key.toString(),word);
+        for (String term : map.keySet()) {
+            int count = map.get(term);
+            if(count >= threshold){
+                int numX = wordTotal.get(key.toString());
+                int numY = wordTotal.get(term);
+                double pmi = Math.log10(count * totalLine/(numX * numY));
+                VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
+                KEYPAIR.set(key.toString(),term);
                 context.write(KEYPAIR,VALUEPAIR);
             }
         }
+      }
+
+  }
+// private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
+    
+//     @Override
+//     public void map(Text key, HMapStIW value, Context context)
+//             throws IOException, InterruptedException {
+//         context.write(key, value);
+//     }
+// }
+
+// private static final class MyCombinerPMI extends
+//         Reducer<Text, HMapStIW, Text, HMapStIW> {
+//     private static final IntWritable SUM = new IntWritable();
+
+//     @Override
+//     public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+//             throws IOException, InterruptedException {
+//         Iterator<HMapStIW> iter = values.iterator();
+//         HMapStIW map = new HMapStIW();
+//         while (iter.hasNext()) {
+//             map.plus(iter.next());
+//         }
+//         context.write(key, map);
+//     }
+// }
+
+// private static final class MyReducerPair extends
+//         Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings> {
+//     private int threshold = 10;
+//     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
+//     private static final PairOfStrings KEYPAIR = new PairOfStrings();
+//     @Override
+//     public void setup(Context context) throws IOException {
+//         threshold = context.getConfiguration().getInt("threshold", 10);
+//     }
+
+//     @Override
+//     public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+//             throws IOException, InterruptedException {
+//         Iterator<HMapStIW> iter = values.iterator();
+//         HMapStIW map = new HMapStIW();
+//         while (iter.hasNext()) {
+//             map.plus(iter.next());
+//         }
+
+//         for (String word : map.keySet()) {
+//             int count = map.get(word);
+//             if (count >= threshold) {
+//                 double numOfX = wordTotal.get(key.toString());
+//                 double numOfY = wordTotal.get(word);
+//                 double PMI = Math.log10((count * totalLine) / (numOfX * numOfY));
+//                 VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
+//                 KEYPAIR.set(key.toString(),word);
+//                 context.write(KEYPAIR,VALUEPAIR);
+//             }
+//         }
         
-    }
-}
+//     }
+// }
 
 
   /**
