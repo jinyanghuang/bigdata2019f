@@ -54,22 +54,39 @@ public class StripesPMI extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
       List<String> tokens = Tokenizer.tokenize(value.toString());
-      ArrayList<String> wordAppearOutter = new ArrayList<String>();
-      for (int i = 0; i < Math.min(40, tokens.size()); i++) {
-        if (wordAppearOutter.contains(tokens.get(i))) continue;
-        wordAppearOutter.add(tokens.get(i));
-        MAP.increment("*");
-        MAP.clear();
-        for (int j = 0; j < Math.min(40, tokens.size()); j++) {
-          if (i == j) continue;
-          if (tokens.get(i).equals(tokens.get(j))) continue;
-          if (MAP.containsKey(tokens.get(j))) continue;
-          MAP.increment(tokens.get(j));
-        }
+    //   ArrayList<String> wordAppearOutter = new ArrayList<String>();
+    //   for (int i = 0; i < Math.min(40, tokens.size()); i++) {
+    //     if (wordAppearOutter.contains(tokens.get(i))) continue;
+    //     wordAppearOutter.add(tokens.get(i));
+    //     MAP.increment("*");
+    //     MAP.clear();
+    //     for (int j = 0; j < Math.min(40, tokens.size()); j++) {
+    //       if (i == j) continue;
+    //       if (tokens.get(i).equals(tokens.get(j))) continue;
+    //       if (MAP.containsKey(tokens.get(j))) continue;
+    //       MAP.increment(tokens.get(j));
+    //     }
         
-        KEY.set(tokens.get(i));
-        context.write(KEY, MAP);
-      }
+    //     KEY.set(tokens.get(i));
+    //     context.write(KEY, MAP);
+    //   }
+        ArrayList<String> wordAppear = new ArrayList<String>();
+            for (int i = 0; i < tokens.size() && i < 40; i++) {
+                String word = tokens.get(i);
+                if (!wordAppear.contains(word)) {
+                    wordAppear.add(word); //check if 1 can be Integer
+                }
+            }
+            for (int i = 0; i < wordAppear.size(); i++) {
+                MAP.increment("*");
+                MAP.clear();
+                KEY.set(wordAppear.get(i));
+                for (int j = 0; j < wordAppear.size(); j++) {
+                    if (i == j)continue;
+                    MAP.increment(wordAppear.get(j));
+                }
+                context.write(KEY, MAP);
+            }
       totalLine++;
     }
   }
