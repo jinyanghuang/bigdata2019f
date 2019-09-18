@@ -40,6 +40,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 public class PairsPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(PairsPMI.class);
   private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
+  private int totalLine = 0;
 
     // Mapper: emits (token, 1) for every word occurrence.
     // first MapReduce counts the occurrences of all words.
@@ -86,8 +87,9 @@ public class PairsPMI extends Configured implements Tool {
             }
 
         }
-        PAIR.set("*","*");
-        context.write(PAIR, ONE);
+//         PAIR.set("*","*");
+//         context.write(PAIR, ONE);
+      totalLine++;
         }
         
     }
@@ -184,7 +186,7 @@ public class PairsPMI extends Configured implements Tool {
 
     @Override
     public void setup(Context context) {
-        totalAppear = wordTotal.get("*");
+//         totalAppear = wordTotal.get("*");
         threshold = context.getConfiguration().getInt("threshold", 10);
     }
 
@@ -201,7 +203,7 @@ public class PairsPMI extends Configured implements Tool {
       float numX = wordTotal.get(key.getLeftElement());
       float numY = wordTotal.get(key.getRightElement());
 
-      double pmi = Math.log(sum * totalAppear/(numX * numY));
+      double pmi = Math.log(sum * totalLine/(numX * numY));
       VALUEPAIR.set(Double.toString(pmi),Integer.toString(sum));
 
     //   SUM.set(sum);
