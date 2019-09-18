@@ -85,6 +85,7 @@ public class StripesPMI extends Configured implements Tool {
   }
 
   private static final class MyReducerCount extends Reducer<Text, HMapStIW, Text, HMapStIW> {
+    private int threshold = 10;
     @Override
     public void setup(Context context) {
         threshold = context.getConfiguration().getInt("threshold", 10);
