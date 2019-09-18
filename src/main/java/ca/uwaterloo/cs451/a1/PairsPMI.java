@@ -204,7 +204,7 @@ public class PairsPMI extends Configured implements Tool {
       float numX = wordTotal.get(key.getLeftElement());
       float numY = wordTotal.get(key.getRightElement());
 
-      double pmi = Math.log(sum * totalLine/(numX * numY));
+      double pmi = Math.log10(sum * totalLine/(numX * numY));
       VALUEPAIR.set(Double.toString(pmi),Integer.toString(sum));
 
     //   SUM.set(sum);
