@@ -78,9 +78,8 @@ public class StripesPMI extends Configured implements Tool {
                 }
             }
             for (int i = 0; i < wordAppear.size(); i++) {
-                
                 MAP.clear();
-              MAP.increment("*");
+                MAP.increment("*");
                 KEY.set(wordAppear.get(i));
                 for (int j = 0; j < wordAppear.size(); j++) {
                     if (i == j)continue;
@@ -108,15 +107,93 @@ public class StripesPMI extends Configured implements Tool {
     }
   }
 
-  private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
-      @Override
-      public void map (Text key, HMapStIW map, Context context)
-        throws IOException, InterruptedException{
-        context.write(key, map);
-      }
+//   private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
+//       @Override
+//       public void map (Text key, HMapStIW map, Context context)
+//         throws IOException, InterruptedException{
+//         context.write(key, map);
+//       }
+//   }
+//   private static final class MyReducer extends Reducer<Text, HMapStFW, Text, HMapStFW> {
+//     @Override
+//     public void reduce(Text key, Iterable<HMapStFW> values, Context context)
+//         throws IOException, InterruptedException {
+//       Iterator<HMapStFW> iter = values.iterator();
+//       HMapStFW map = new HMapStFW();
+
+//       while (iter.hasNext()) {
+//         map.plus(iter.next());
+//       }
+
+//       float sum = 0.0f;
+//       for (MapKF.Entry<String> entry : map.entrySet()) {
+//         sum += entry.getValue();
+//       }
+//       for (String term : map.keySet()) {
+//         map.put(term, map.get(term) / sum);
+//       }
+
+//       context.write(key, map);
+//     }
+//   }
+//   private static final class MyReducerPMI extends Reducer<Text, HMapStIW, Text, PairOfStrings>{
+//     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
+//     private static final PairOfStrings KEYPAIR = new PairOfStrings();
+//     private int threshold = 10;
+//     @Override
+//     public void setup(Context context) {
+//         threshold = context.getConfiguration().getInt("threshold", 10);
+//     }
+//     @Override
+//       public void reduce (Text key, Iterable<HMapStIW> values, Context context) 
+//         throws IOException, InterruptedException{
+//         Iterator<HMapStIW> iter = values.iterator();
+//         HMapStIW map = new HMapStIW();
+
+//         while(iter.hasNext()){
+//             map.plus(iter.next());
+//         }
+
+//         for (String term : map.keySet()) {
+//             int count = map.get(term);
+//             if(count >= threshold){
+//                 int numX = wordTotal.get(key.toString());
+//                 int numY = wordTotal.get(term);
+//                 double pmi = Math.log10(count * totalLine/(numX * numY));
+//                 VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
+//                 KEYPAIR.set(key.toString(),term);
+//                 context.write(KEYPAIR,VALUEPAIR);
+//             }
+//         }
+//       }
+
+//   }
+
+protected static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
+    private static final Text TEXT = new Text();
+
+    @Override
+    public void map(Text key, HMapStIW value, Context context)
+        throws IOException, InterruptedException {
+      context.write(key, value);
   }
 
-  private static final class MyReducerPMI extends Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings>{
+  private static final class MyCombinerPMI extends Reducer<Text, HMapStIW, Text, HMapStIW> {
+    @Override
+    public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+        throws IOException, InterruptedException {
+      Iterator<HMapStIW> iter = values.iterator();
+      HMapStIW map = new HMapStIW();
+
+      while (iter.hasNext()) {
+        map.plus(iter.next());
+      }
+
+      context.write(key, map);
+    }
+  }
+
+  private static final class MyReducerPMI extends Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings> {
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
     private static final PairOfStrings KEYPAIR = new PairOfStrings();
     private int threshold = 10;
@@ -125,29 +202,30 @@ public class StripesPMI extends Configured implements Tool {
         threshold = context.getConfiguration().getInt("threshold", 10);
     }
     @Override
-      public void reduce (Text key, Iterable<HMapStIW> values, Context context) 
-        throws IOException, InterruptedException{
-        Iterator<HMapStIW> iter = values.iterator();
-        HMapStIW map = new HMapStIW();
+    public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+        throws IOException, InterruptedException {
+      Iterator<HMapStIW> iter = values.iterator();
+      HMapStIW map = new HMapStIW();
 
-        while(iter.hasNext()){
-            map.plus(iter.next());
-        }
-
-        for (String term : map.keySet()) {
-            int count = map.get(term);
-            if(count >= threshold){
-                int numX = wordTotal.get(key.toString());
-                int numY = wordTotal.get(term);
-                double pmi = Math.log10(count * totalLine/(numX * numY));
-                VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
-                KEYPAIR.set(key.toString(),term);
-                context.write(KEYPAIR,VALUEPAIR);
-            }
-        }
+      while (iter.hasNext()) {
+        map.plus(iter.next());
       }
 
+      
+      for (String term : map.keySet()) {
+          int count = map.get(term);
+          if(count >= threshold){
+            int numX = wordTotal.get(key.toString());
+            int numY = wordTotal.get(term);
+            double pmi = Math.log10(count * totalLine/(numX * numY));
+            VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
+            KEYPAIR.set(key.toString(),term);
+            context.write(KEYPAIR,VALUEPAIR);
+        }
+      }
+    }
   }
+
   /**
    * Creates an instance of this tool.
    */
@@ -252,7 +330,7 @@ public class StripesPMI extends Configured implements Tool {
     job2.setOutputValueClass(PairOfStrings.class);
 
     job2.setMapperClass(MyMapperPMI.class);
-    job2.setCombinerClass(MyReducerPMI.class);
+    // job2.setCombinerClass(MyReducerPMI.class);
     job2.setReducerClass(MyReducerPMI.class);
 
     job2.waitForCompletion(true);
