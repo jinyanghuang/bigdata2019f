@@ -40,7 +40,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 public class PairsPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(PairsPMI.class);
   private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
-  private static int totalLine = 0;
+//   private static int totalLine = 0;
 
     // Mapper: emits (token, 1) for every word occurrence.
     // first MapReduce counts the occurrences of all words.
@@ -53,44 +53,44 @@ public class PairsPMI extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
         List<String> tokens = Tokenizer.tokenize(value.toString());
-        ArrayList<String> wordAppear = new ArrayList<String>();
-        // for (int i = 0; i < tokens.size(); i++) {
-        //     if (wordAppearOutter.contains(tokens.get(i))) continue;
-        //     wordAppearOutter.add(tokens.get(i));
-        //     ArrayList<String> wordAppearInner = new ArrayList<String>();
-        //     wordAppearInner.add(tokens.get(i));
-        //     for (int j = 0; j < Math.min(40, tokens.size()); j++) {
-        //       if (i == j) continue;
-        //       if (wordAppearInner.contains(tokens.get(j))) continue;
-        //       wordAppearInner.add(tokens.get(j));
-        //       PAIR.set(tokens.get(i), tokens.get(j));
-        //       context.write(PAIR, ONE);
-        //       PAIR.set(tokens.get(i), "*");
-        //       context.write(PAIR, ONE);
-        //     }
-        //   }
-        //   PAIR.set("*","*");
-        //   context.write(PAIR, ONE);
-        for (int i = 0; i < tokens.size() && i < 40; i++) {
-            String word = tokens.get(i);
-            if (!wordAppear.contains(word)) {
-                wordAppear.add(word); 
-                PAIR.set(word,"*");
-                context.write(PAIR, ONE);
+        ArrayList<String> wordAppearOutter = new ArrayList<String>();
+        for (int i = 0; i < tokens.size(); i++) {
+            if (wordAppearOutter.contains(tokens.get(i))) continue;
+            wordAppearOutter.add(tokens.get(i));
+            PAIR.set(tokens.get(i), "*");
+            context.write(PAIR, ONE);
+            ArrayList<String> wordAppearInner = new ArrayList<String>();
+            wordAppearInner.add(tokens.get(i));
+            for (int j = 0; j < Math.min(40, tokens.size()); j++) {
+              if (i == j) continue;
+              if (wordAppearInner.contains(tokens.get(j))) continue;
+              wordAppearInner.add(tokens.get(j));
+              PAIR.set(tokens.get(i), tokens.get(j));
+              context.write(PAIR, ONE);
             }
-        }
-        for (int i = 0; i < wordAppear.size(); i++) {
-            for (int j = 0; j < wordAppear.size(); j++) {
-                if (i == j) continue;
-                PAIR.set(wordAppear.get(i), wordAppear.get(j));
-                context.write(PAIR, ONE);
+          }
+          PAIR.set("*","*");
+          context.write(PAIR, ONE);
+//         for (int i = 0; i < tokens.size() && i < 40; i++) {
+//             String word = tokens.get(i);
+//             if (!wordAppear.contains(word)) {
+//                 wordAppear.add(word); 
+//                 PAIR.set(word,"*");
+//                 context.write(PAIR, ONE);
+//             }
+//         }
+//         for (int i = 0; i < wordAppear.size(); i++) {
+//             for (int j = 0; j < wordAppear.size(); j++) {
+//                 if (i == j) continue;
+//                 PAIR.set(wordAppear.get(i), wordAppear.get(j));
+//                 context.write(PAIR, ONE);
                
-            }
+//             }
 
-        }
+// //         }
 //         PAIR.set("*","*");
 //         context.write(PAIR, ONE);
-      totalLine++;
+
         }
         
     }
@@ -187,7 +187,7 @@ public class PairsPMI extends Configured implements Tool {
 
     @Override
     public void setup(Context context) {
-//         totalAppear = wordTotal.get("*");
+        totalAppear = wordTotal.get("*");
         threshold = context.getConfiguration().getInt("threshold", 10);
     }
 
@@ -204,7 +204,7 @@ public class PairsPMI extends Configured implements Tool {
       float numX = wordTotal.get(key.getLeftElement());
       float numY = wordTotal.get(key.getRightElement());
 
-      double pmi = Math.log10(sum * totalLine/(numX * numY));
+      double pmi = Math.log10(sum * totalAppear/(numX * numY));
       VALUEPAIR.set(Double.toString(pmi),Integer.toString(sum));
 
     //   SUM.set(sum);
