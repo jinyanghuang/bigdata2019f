@@ -36,7 +36,7 @@ import tl.lin.data.pair.PairOfStrings;
 public class StripesPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(StripesPMI.class);
   private static int totalLine = 0;
-  private static MAP<String,Integer> wordTotal = new HashMap<String,Integer>();
+  private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
 
 
   private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, HMapStIW> {
