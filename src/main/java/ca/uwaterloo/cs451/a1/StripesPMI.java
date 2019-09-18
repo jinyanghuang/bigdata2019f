@@ -213,7 +213,7 @@ public class StripesPMI extends Configured implements Tool {
     job1.setCombinerClass(MyReducerCount.class);
     job1.setReducerClass(MyReducerCount.class);
     //set output format
-    job1.setOutputFormatClass(TextFileOutputFormat.class);
+    job1.setOutputFormatClass(TextOutputFormat.class);
 
     long startTime = System.currentTimeMillis();
     job1.waitForCompletion(true);
