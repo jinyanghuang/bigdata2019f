@@ -282,7 +282,7 @@ public class PairsPMI extends Configured implements Tool {
     FileSystem.get(getConf()).delete(outputDir, true);
 
     job2.setNumReduceTasks(args.numReducers);
-
+    job2.getConfiguration().setInt("threshold", args.threshold);
     FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
     FileOutputFormat.setOutputPath(job2, new Path(args.output));
 
