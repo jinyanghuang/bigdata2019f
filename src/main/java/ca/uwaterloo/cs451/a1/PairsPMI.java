@@ -30,6 +30,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.hadoop.io.FloatWritable;
@@ -51,9 +52,16 @@ public class PairsPMI extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
         List<String> tokens = Tokenizer.tokenize(value.toString());
+        ArrayList<String> wordAppearOutter = new ArrayList<String>();
         for (int i = 0; i < tokens.size(); i++) {
+            if (wordAppearOutter.contains(tokens.get(i))) continue;
+            wordAppearOutter.add(tokens.get(i));
+            ArrayList<String> wordAppearInner = new ArrayList<String>();
             for (int j = 0; j < Math.min(40, tokens.size()); j++) {
               if (i == j) continue;
+              if (wordAppearOutter.contains(tokens.get(j))) continue;
+              if (wordAppearInner.contains(tokens.get(j))) continue;
+              wordAppearInner.add(tokens.get(j));
               PAIR.set(tokens.get(i), tokens.get(j));
               context.write(PAIR, ONE);
               PAIR.set(tokens.get(i), "*");
@@ -281,8 +289,10 @@ public class PairsPMI extends Configured implements Tool {
     Path outputDir = new Path(args.output);
     FileSystem.get(getConf()).delete(outputDir, true);
 
-    job2.setNumReduceTasks(args.numReducers);
     job2.getConfiguration().setInt("threshold", args.threshold);
+
+    job2.setNumReduceTasks(args.numReducers);
+
     FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
     FileOutputFormat.setOutputPath(job2, new Path(args.output));
 
