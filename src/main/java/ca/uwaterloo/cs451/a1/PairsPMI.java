@@ -52,24 +52,42 @@ public class PairsPMI extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
         List<String> tokens = Tokenizer.tokenize(value.toString());
-        ArrayList<String> wordAppearOutter = new ArrayList<String>();
-        for (int i = 0; i < tokens.size(); i++) {
-            if (wordAppearOutter.contains(tokens.get(i))) continue;
-            wordAppearOutter.add(tokens.get(i));
-            ArrayList<String> wordAppearInner = new ArrayList<String>();
-	    wordAppearInner.add(tokens.get(i));
-            for (int j = 0; j < Math.min(40, tokens.size()); j++) {
-              if (i == j) continue;
-              if (wordAppearInner.contains(tokens.get(j))) continue;
-              wordAppearInner.add(tokens.get(j));
-              PAIR.set(tokens.get(i), tokens.get(j));
-              context.write(PAIR, ONE);
-              PAIR.set(tokens.get(i), "*");
-              context.write(PAIR, ONE);
+        ArrayList<String> wordAppear = new ArrayList<String>();
+        // for (int i = 0; i < tokens.size(); i++) {
+        //     if (wordAppearOutter.contains(tokens.get(i))) continue;
+        //     wordAppearOutter.add(tokens.get(i));
+        //     ArrayList<String> wordAppearInner = new ArrayList<String>();
+        //     wordAppearInner.add(tokens.get(i));
+        //     for (int j = 0; j < Math.min(40, tokens.size()); j++) {
+        //       if (i == j) continue;
+        //       if (wordAppearInner.contains(tokens.get(j))) continue;
+        //       wordAppearInner.add(tokens.get(j));
+        //       PAIR.set(tokens.get(i), tokens.get(j));
+        //       context.write(PAIR, ONE);
+        //       PAIR.set(tokens.get(i), "*");
+        //       context.write(PAIR, ONE);
+        //     }
+        //   }
+        //   PAIR.set("*","*");
+        //   context.write(PAIR, ONE);
+        for (int i = 0; i < tokens.size() && i < 40; i++) {
+            String word = tokens.get(i);
+            if (!wordAppear.contains(word)) {
+                wordAppear.add(word); 
             }
-          }
-          PAIR.set("*","*");
-          context.write(PAIR, ONE);
+        }
+        for (int i = 0; i < wordAppear.size(); i++) {
+            for (int j = 0; j < wordAppear.size(); j++) {
+                if (i == j) continue;
+                PAIR.set(wordAppear.get(i), wordAppear.get(j));
+                context.write(PAIR, ONE);
+                PAIR.set(wordAppear.get(i),"*");
+                context.write(PAIR, ONE);
+            }
+
+        }
+        PAIR.set("*","*");
+        context.write(PAIR, ONE);
         }
         
     }
