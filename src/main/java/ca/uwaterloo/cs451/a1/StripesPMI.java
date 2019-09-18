@@ -61,7 +61,7 @@ public class StripesPMI extends Configured implements Tool {
         MAP.clear();
         for (int j = 0; j < Math.min(40, tokens.size()); j++) {
           if (i == j) continue;
-          if (wordAppearOutter.contains(tokens.get(j))) continue;
+          if (tokens.get(i).equals(tokens.get(j))) continue;
           if (MAP.containsKey(tokens.get(j))) continue;
           MAP.increment(tokens.get(j));
         }
