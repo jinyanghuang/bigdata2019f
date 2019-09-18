@@ -53,7 +53,7 @@ public class PairsPMI extends Configured implements Tool {
         throws IOException, InterruptedException {
         List<String> tokens = Tokenizer.tokenize(value.toString());
         ArrayList<String> wordAppearOutter = new ArrayList<String>();
-        for (int i = 0; i < tokens.size(); i++) {
+        for (int i = 0; i < Math.min(40, tokens.size()); i++) {
             if (wordAppearOutter.contains(tokens.get(i))) continue;
             wordAppearOutter.add(tokens.get(i));
             PAIR.set(tokens.get(i), "*");
