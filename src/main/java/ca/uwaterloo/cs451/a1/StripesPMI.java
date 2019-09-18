@@ -29,18 +29,20 @@ import java.util.Map;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 import org.apache.hadoop.mapreduce.Partitioner;
 import tl.lin.data.pair.PairOfStrings;
 
 public class StripesPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(StripesPMI.class);
   private static int totalLine = 0;
+  private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
+
 
   private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, HMapStIW> {
     private static final HMapStIW MAP = new HMapStIW();
     private static final Text KEY = new Text();
-    private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
-
+    
     
 
     @Override
@@ -175,7 +177,7 @@ public class StripesPMI extends Configured implements Tool {
     Path intermediatePath = new Path(intermediateDir);
     FileSystem.get(getConf()).delete(intermediatePath, true);
 
-    job1.getConfiguration().setInt("threshold", args.threshold);
+    job1.getConfiguration().setInt("threshold", args.numThreshold);
 
     job1.setNumReduceTasks(args.numReducers);
 
@@ -212,7 +214,7 @@ public class StripesPMI extends Configured implements Tool {
     Path outputDir = new Path(args.output);
     FileSystem.get(getConf()).delete(outputDir, true);
 
-    job2.getConfiguration().setInt("threshold", args.threshold);
+    job2.getConfiguration().setInt("threshold", args.numThreshold);
 
     job2.setNumReduceTasks(args.numReducers);
 
@@ -225,8 +227,8 @@ public class StripesPMI extends Configured implements Tool {
 
     job2.setMapOutputKeyClass(Text.class);
     job2.setMapOutputValueClass(HMapStIW.class);
-    job2.setOutputKeyClass(Text.class);
-    job2.setOutputValueClass(HMapStIW.class);
+    job2.setOutputKeyClass(PairOfStrings.class);
+    job2.setOutputValueClass(PairOfStrings.class);
 
     job2.setMapperClass(MyMapperPMI.class);
     job2.setCombinerClass(MyReducerPMI.class);
