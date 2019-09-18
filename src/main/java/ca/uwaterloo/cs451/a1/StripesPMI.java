@@ -91,7 +91,8 @@ public class StripesPMI extends Configured implements Tool {
 
   private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
       @Override
-      public void map (Text key, HMapStIW map, Context context){
+      public void map (Text key, HMapStIW map, Context context)
+        throws IOException, InterruptedException{
         context.write(key, map);
       }
   }
@@ -105,7 +106,8 @@ public class StripesPMI extends Configured implements Tool {
         threshold = context.getConfiguration().getInt("threshold", 10);
     }
     @Override
-      public void reduce (Text key, Iterable<HMapStIW> values, Context context){
+      public void reduce (Text key, Iterable<HMapStIW> values, Context context) 
+        throws IOException, InterruptedException{
         Iterator<HMapStIW> iter = values.iterator();
         HMapStIW map = new HMapStIW();
 
