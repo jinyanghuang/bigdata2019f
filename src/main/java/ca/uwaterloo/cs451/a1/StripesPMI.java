@@ -54,18 +54,18 @@ public class StripesPMI extends Configured implements Tool {
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
       List<String> tokens = Tokenizer.tokenize(value.toString());
-      ArrayList<String> wordAppearOutter = new ArrayList<String>();
+     // ArrayList<String> wordAppearOutter = new ArrayList<String>();
       for (int i = 0; i < tokens.size(); i++) {
-        if (wordAppearOutter.contains(tokens.get(i))) continue;
-        wordAppearOutter.add(tokens.get(i));
+       // if (wordAppearOutter.contains(tokens.get(i))) continue;
+        //wordAppearOutter.add(tokens.get(i));
         MAP.clear();
         for (int j = 0; j < Math.min(40, tokens.size()); j++) {
           if (i == j) continue;
-          if (tokens.get(i).equals(tokens.get(j))) continue;
-          if (MAP.containsKey(tokens.get(j))) continue;
+          //if (tokens.get(i).equals(tokens.get(j))) continue;
+          //if (MAP.containsKey(tokens.get(j))) continue;
           MAP.increment(tokens.get(j));
+	  MAP.increment("*");
         }
-        MAP.increment("*");
         KEY.set(tokens.get(i));
         context.write(KEY, MAP);
       }
