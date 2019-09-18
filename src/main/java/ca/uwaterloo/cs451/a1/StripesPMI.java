@@ -114,28 +114,7 @@ public class StripesPMI extends Configured implements Tool {
         context.write(key, map);
       }
   }
-  private static final class MyReducer extends Reducer<Text, HMapStFW, Text, HMapStFW> {
-    @Override
-    public void reduce(Text key, Iterable<HMapStFW> values, Context context)
-        throws IOException, InterruptedException {
-      Iterator<HMapStFW> iter = values.iterator();
-      HMapStFW map = new HMapStFW();
-
-      while (iter.hasNext()) {
-        map.plus(iter.next());
-      }
-
-      float sum = 0.0f;
-      for (MapKF.Entry<String> entry : map.entrySet()) {
-        sum += entry.getValue();
-      }
-      for (String term : map.keySet()) {
-        map.put(term, map.get(term) / sum);
-      }
-
-      context.write(key, map);
-    }
-  }
+  
   private static final class MyReducerPMI extends Reducer<Text, HMapStIW, Text, PairOfStrings>{
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
     private static final PairOfStrings KEYPAIR = new PairOfStrings();
