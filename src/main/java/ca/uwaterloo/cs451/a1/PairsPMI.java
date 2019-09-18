@@ -40,9 +40,8 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 public class PairsPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(PairsPMI.class);
   private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
-//   private static int totalLine = 0;
 
-    // Mapper: emits (token, 1) for every word occurrence.
+    
     // first MapReduce counts the occurrences of all words.
   public static final class MyMapperCount extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
     // Reuse objects to save overhead of object creation.
@@ -71,26 +70,6 @@ public class PairsPMI extends Configured implements Tool {
           }
           PAIR.set("*","*");
           context.write(PAIR, ONE);
-//         for (int i = 0; i < tokens.size() && i < 40; i++) {
-//             String word = tokens.get(i);
-//             if (!wordAppear.contains(word)) {
-//                 wordAppear.add(word); 
-//                 PAIR.set(word,"*");
-//                 context.write(PAIR, ONE);
-//             }
-//         }
-//         for (int i = 0; i < wordAppear.size(); i++) {
-//             for (int j = 0; j < wordAppear.size(); j++) {
-//                 if (i == j) continue;
-//                 PAIR.set(wordAppear.get(i), wordAppear.get(j));
-//                 context.write(PAIR, ONE);
-               
-//             }
-
-// //         }
-//         PAIR.set("*","*");
-//         context.write(PAIR, ONE);
-
         }
         
     }
@@ -212,8 +191,6 @@ public class PairsPMI extends Configured implements Tool {
       }
     }
   }
-
-  
 
   private static final class MyPartitionerPMI extends Partitioner<PairOfStrings, IntWritable> {
     @Override
