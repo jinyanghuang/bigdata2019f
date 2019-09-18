@@ -115,7 +115,7 @@ public class StripesPMI extends Configured implements Tool {
       }
   }
   
-  private static final class MyReducerPMI extends Reducer<Text, HMapStIW, Text, PairOfStrings>{
+  private static final class MyReducerPMI extends Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings>{
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
     private static final PairOfStrings KEYPAIR = new PairOfStrings();
     private int threshold = 10;
