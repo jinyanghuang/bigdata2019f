@@ -57,9 +57,9 @@ public class PairsPMI extends Configured implements Tool {
             if (wordAppearOutter.contains(tokens.get(i))) continue;
             wordAppearOutter.add(tokens.get(i));
             ArrayList<String> wordAppearInner = new ArrayList<String>();
+	    wordAppearInner.add(tokens.get(i));
             for (int j = 0; j < Math.min(40, tokens.size()); j++) {
               if (i == j) continue;
-              if (wordAppearOutter.contains(tokens.get(j))) continue;
               if (wordAppearInner.contains(tokens.get(j))) continue;
               wordAppearInner.add(tokens.get(j));
               PAIR.set(tokens.get(i), tokens.get(j));
