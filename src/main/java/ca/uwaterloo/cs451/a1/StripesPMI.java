@@ -177,6 +177,7 @@ protected static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HM
         throws IOException, InterruptedException {
       context.write(key, value);
   }
+}
 
   private static final class MyCombinerPMI extends Reducer<Text, HMapStIW, Text, HMapStIW> {
     @Override
