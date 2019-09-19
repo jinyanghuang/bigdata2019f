@@ -111,7 +111,7 @@ public class StripesPMI extends Configured implements Tool {
             throws IOException, InterruptedException {
             List<String> tokens = Tokenizer.tokenize(value.toString());
             ArrayList<String> wordAppear = new ArrayList<String>();
-            for (int i = 0; i < tokens.size() && i < 40; i++) {
+            for (int i = 0; i < Math.min(40, tokens.size()); i++) {
                 String word = tokens.get(i);
                 if (!wordAppear.contains(word)) {
                     wordAppear.add(word); //check if 1 can be Integer
@@ -305,6 +305,7 @@ public class StripesPMI extends Configured implements Tool {
 
     job2.waitForCompletion(true);
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+    FileSystem.get(getConf()).delete(intermediatePath, true);
     
     return 0;
   }
