@@ -37,9 +37,6 @@ import org.apache.hadoop.io.SequenceFile.Reader;
 
 public class StripesPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(StripesPMI.class);
-  private static int totalLine = 0;
-  
-
 
   private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, IntWritable> {
     private static final Text KEY = new Text();
