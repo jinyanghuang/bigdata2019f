@@ -99,10 +99,10 @@ public class StripesPMI extends Configured implements Tool {
       while (iter.hasNext()) {
         map.plus(iter.next());
       }
-      if(map.get("*")>=threshold){
+      //if(map.get("*")>=threshold){
         wordTotal.put(key.toString(), map.get("*"));
         context.write(key, map);
-      }
+      //}
     }
   }
 
