@@ -160,7 +160,7 @@ public class PairsPMI extends Configured implements Tool {
     private int threshold = 10;
 
     @Override
-    public void setup(Context context) {
+    public void setup(Context context) throws IOException{
         
         threshold = context.getConfiguration().getInt("threshold", 10);
         //read file
