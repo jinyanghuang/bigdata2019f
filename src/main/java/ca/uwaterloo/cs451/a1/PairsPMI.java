@@ -155,6 +155,7 @@ public class PairsPMI extends Configured implements Tool {
   private static final class MyReducerPMI extends
       Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfStrings> {
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
+    private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
     private static int totalLine;
     private int threshold = 10;
 
