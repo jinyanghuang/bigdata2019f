@@ -136,8 +136,8 @@ public class StripesPMI extends Configured implements Tool {
         for (String term : map.keySet()) {
             int count = map.get(term);
             if(count >= threshold && !term.equals("*")){
-                int numX = wordTotal.get(key.toString());
-                int numY = wordTotal.get(term);
+                float numX = wordTotal.get(key.toString());
+                float numY = wordTotal.get(term);
                 double pmi = Math.log10(count * totalLine/(numX * numY));
                 VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
                 KEYPAIR.set(key.toString(),term);
