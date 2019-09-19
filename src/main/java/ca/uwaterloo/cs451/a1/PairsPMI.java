@@ -259,7 +259,7 @@ private static final class MyMapperCount extends Mapper<LongWritable, Text, Text
 
     job1.getConfiguration().setInt("threshold", args.numThreshold);
 
-    job1.setNumReduceTasks(args.numReducers);
+    job1.setNumReduceTasks(1);
 
     FileInputFormat.setInputPaths(job1, new Path(args.input));
     FileOutputFormat.setOutputPath(job1, new Path(intermediateDir));
