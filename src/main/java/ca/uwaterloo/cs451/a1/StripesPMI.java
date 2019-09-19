@@ -255,9 +255,9 @@ public class StripesPMI extends Configured implements Tool {
     FileOutputFormat.setOutputPath(job1, new Path(intermediateDir));
 
     job1.setMapOutputKeyClass(Text.class);
-    job1.setMapOutputValueClass(HMapStIW.class);
+    job1.setMapOutputValueClass(IntWritable.class);
     job1.setOutputKeyClass(Text.class);
-    job1.setOutputValueClass(HMapStIW.class);
+    job1.setOutputValueClass(IntWritable.class);
 
     job1.setMapperClass(MyMapperCount.class);
     job1.setCombinerClass(MyCombinerCount.class);
