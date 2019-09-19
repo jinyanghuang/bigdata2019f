@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.Reader;
 
 public class PairsPMI extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(PairsPMI.class);
@@ -108,7 +110,7 @@ public class PairsPMI extends Configured implements Tool {
 
   private static final class MyMapperPMI extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
     private static final PairOfStrings PAIR = new PairOfStrings();
-    private static final IntWritable COUNT = new IntWritable();
+    private static final IntWritable ONE = new IntWritable(1);
     
 
     @Override
@@ -153,7 +155,7 @@ public class PairsPMI extends Configured implements Tool {
   private static final class MyReducerPMI extends
       Reducer<PairOfStrings, IntWritable, PairOfStrings, PairOfStrings> {
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
-    private static int totalAppear;
+    private static int totalLine;
     private int threshold = 10;
 
     @Override
@@ -191,7 +193,7 @@ public class PairsPMI extends Configured implements Tool {
       float numX = wordTotal.get(key.getLeftElement());
       float numY = wordTotal.get(key.getRightElement());
 
-      double pmi = Math.log10(sum * totalAppear/(numX * numY));
+      double pmi = Math.log10(sum * totalLine/(numX * numY));
       VALUEPAIR.set(Double.toString(pmi),Integer.toString(sum));
 
     //   SUM.set(sum);
