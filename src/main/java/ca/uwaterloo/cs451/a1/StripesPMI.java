@@ -156,7 +156,7 @@ public class StripesPMI extends Configured implements Tool {
         threshold = context.getConfiguration().getInt("threshold", 10);
 
         //read file
-        Path path = new Path("intermediate");
+        Path path = new Path("intermediate/part-r-00000");
 
         Text key = new Text();
         IntWritable value = new IntWritable();
@@ -249,7 +249,7 @@ public class StripesPMI extends Configured implements Tool {
 
     job1.getConfiguration().setInt("threshold", args.numThreshold);
 
-    job1.setNumReduceTasks(args.numReducers);
+    job1.setNumReduceTasks(1);
 
     FileInputFormat.setInputPaths(job1, new Path(args.input));
     FileOutputFormat.setOutputPath(job1, new Path(intermediateDir));
