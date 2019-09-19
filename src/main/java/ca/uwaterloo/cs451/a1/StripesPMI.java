@@ -96,7 +96,7 @@ public class StripesPMI extends Configured implements Tool {
           
               SUM.set(sum);
               context.write(key, SUM);
-          
+        } 
   }
 
     private static final class MyMapperPMI extends Mapper<LongWritable, Text, Text, HMapStIW> {
