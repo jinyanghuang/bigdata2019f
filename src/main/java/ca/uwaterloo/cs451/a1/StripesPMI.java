@@ -36,12 +36,12 @@ import tl.lin.data.pair.PairOfStrings;
 public class StripesPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(StripesPMI.class);
   private static int totalLine = 0;
-  private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
+  
 
 
-  private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, HMapStIW> {
-    private static final HMapStIW MAP = new HMapStIW();
+  private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, IntWritable> {
     private static final Text KEY = new Text();
+    private static final IntWritable ONE = new IntWritable(1);
     
     @Override
     public void map(LongWritable key, Text value, Context context)
@@ -52,62 +52,79 @@ public class StripesPMI extends Configured implements Tool {
             String word = tokens.get(i);
             if (!wordAppear.contains(word)) {
                 wordAppear.add(word); //check if 1 can be Integer
+                KEY.set(word);
+                context.write(KEY,ONE);
             }
         }
-        for (int i = 0; i < wordAppear.size(); i++) {
-            MAP.clear();
-            MAP.increment("*");
-            KEY.set(wordAppear.get(i));
-            for (int j = 0; j < wordAppear.size(); j++) {
-                if (i == j)continue;
-                MAP.increment(wordAppear.get(j));
-            }
-            context.write(KEY, MAP);
-        }
-        totalLine++;
+        KEY.set("*");
+        context.write(KEY,ONE);
+        
     }
   }
 
   private static final class MyCombinerCount extends
-            Reducer<Text, HMapStIW, Text, HMapStIW> {
+            Reducer<Text, IntWritable, Text, IntWritable> {
         private static final IntWritable SUM = new IntWritable();
 
         @Override
-        public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
-            Iterator<HMapStIW> iter = values.iterator();
-            HMapStIW map = new HMapStIW();
-            while (iter.hasNext()) {
-                map.plus(iter.next());
-            }
-            context.write(key, map);
+            // Sum up values.
+        Iterator<IntWritable> iter = values.iterator();
+        int sum = 0;
+        while (iter.hasNext()) {
+            sum += iter.next().get();
+        }
+        
+            SUM.set(sum);
+            context.write(key, SUM);
+        
         }
     }
 
 
-  private static final class MyReducerCount extends Reducer<Text, HMapStIW, Text, HMapStIW> {
+  private static final class MyReducerCount extends Reducer<Text, IntWritable, Text, IntWritable> {
     @Override
-    public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      Iterator<HMapStIW> iter = values.iterator();
-      HMapStIW map = new HMapStIW();
+          // Sum up values.
+          Iterator<IntWritable> iter = values.iterator();
+          int sum = 0;
+          while (iter.hasNext()) {
+              sum += iter.next().get();
+          }
+          
+              SUM.set(sum);
+              context.write(key, SUM);
+          
+  }
 
-      while (iter.hasNext()) {
-        map.plus(iter.next());
-      }
-      
-      wordTotal.put(key.toString(), map.get("*"));
-      context.write(key, map);
+    private static final class MyMapperPMI extends Mapper<LongWritable, Text, Text, HMapStIW> {
+        private static final HMapStIW MAP = new HMapStIW();
+        private static final Text KEY = new Text();
+        
+        @Override
+        public void map(LongWritable key, Text value, Context context)
+            throws IOException, InterruptedException {
+            List<String> tokens = Tokenizer.tokenize(value.toString());
+            ArrayList<String> wordAppear = new ArrayList<String>();
+            for (int i = 0; i < tokens.size() && i < 40; i++) {
+                String word = tokens.get(i);
+                if (!wordAppear.contains(word)) {
+                    wordAppear.add(word); //check if 1 can be Integer
+                }
+            }
+            for (int i = 0; i < wordAppear.size(); i++) {
+                MAP.clear();
+                KEY.set(wordAppear.get(i));
+                for (int j = 0; j < wordAppear.size(); j++) {
+                    if (i == j)continue;
+                    MAP.increment(wordAppear.get(j));
+                }
+                context.write(KEY, MAP);
+            }
+        }
     }
-  }
-
-  private static final class MyMapperPMI extends Mapper<Text, HMapStIW, Text, HMapStIW> {
-      @Override
-      public void map (Text key, HMapStIW map, Context context)
-        throws IOException, InterruptedException{
-        context.write(key, map);
-      }
-  }
   
   private static final class MyCombinerPMI extends
             Reducer<Text, HMapStIW, Text, HMapStIW> {
@@ -128,10 +145,29 @@ public class StripesPMI extends Configured implements Tool {
   private static final class MyReducerPMI extends Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings>{
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
     private static final PairOfStrings KEYPAIR = new PairOfStrings();
-    private int threshold = 10;
+    private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
+    private static int threshold = 10;
+    private static int totalLine = 0;
     @Override
     public void setup(Context context) {
         threshold = context.getConfiguration().getInt("threshold", 10);
+
+        //read file
+        Path path = new Path("intermediate");
+
+        Text key = new PairOfStrings();
+        IntWritable value = new IntWritable();
+        SequenceFile.Reader reader =
+                    new SequenceFile.Reader(context.getConfiguration(), SequenceFile.Reader.file(path));
+
+        while (reader.next(key, value)) {
+            if (key.toString().equals("*")) {
+                totalLine = value.get();
+            } else {
+                wordTotal.put(key.toString(), value.get());
+            }
+        }
+        reader.close();
     }
     @Override
       public void reduce (Text key, Iterable<HMapStIW> values, Context context) 
@@ -145,7 +181,7 @@ public class StripesPMI extends Configured implements Tool {
 
         for (String term : map.keySet()) {
             int count = map.get(term);
-            if(count >= threshold && !term.equals("*")){
+            if(count >= threshold ){
                 float numX = wordTotal.get(key.toString());
                 float numY = wordTotal.get(term);
                 double pmi = Math.log10(count * totalLine/(numX * numY));
@@ -249,10 +285,10 @@ public class StripesPMI extends Configured implements Tool {
 
     job2.setNumReduceTasks(args.numReducers);
 
-    FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
+    FileInputFormat.setInputPaths(job2, new Path(args.input));
     FileOutputFormat.setOutputPath(job2, new Path(args.output));
 
-    job2.setInputFormatClass(SequenceFileInputFormat.class);
+    job2.setInputFormatClass(TextInputFormat.class);
     //set output format
     job2.setOutputFormatClass(TextOutputFormat.class);
 
