@@ -37,85 +37,64 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 
-public class PairsPMI extends Configured implements Tool {
-  private static final Logger LOG = Logger.getLogger(PairsPMI.class);
-  private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
-
-    
-    // first MapReduce counts the occurrences of all words.
-  public static final class MyMapperCount extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
-    // Reuse objects to save overhead of object creation.
+private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, IntWritable> {
+    private static final Text KEY = new Text();
     private static final IntWritable ONE = new IntWritable(1);
-    private static final PairOfStrings PAIR = new PairOfStrings();
-
+    
     @Override
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
         List<String> tokens = Tokenizer.tokenize(value.toString());
-        ArrayList<String> wordAppearOutter = new ArrayList<String>();
-        for (int i = 0; i < Math.min(40, tokens.size()); i++) {
-            if (wordAppearOutter.contains(tokens.get(i))) continue;
-            wordAppearOutter.add(tokens.get(i));
-            PAIR.set(tokens.get(i), "*");
-            context.write(PAIR, ONE);
-            ArrayList<String> wordAppearInner = new ArrayList<String>();
-            wordAppearInner.add(tokens.get(i));
-            for (int j = 0; j < Math.min(40, tokens.size()); j++) {
-              if (i == j) continue;
-              if (wordAppearInner.contains(tokens.get(j))) continue;
-              wordAppearInner.add(tokens.get(j));
-              PAIR.set(tokens.get(i), tokens.get(j));
-              context.write(PAIR, ONE);
+        ArrayList<String> wordAppear = new ArrayList<String>();
+        for (int i = 0; i < tokens.size() && i < 40; i++) {
+            String word = tokens.get(i);
+            if (!wordAppear.contains(word)) {
+                wordAppear.add(word); //check if 1 can be Integer
+                KEY.set(word);
+                context.write(KEY,ONE);
             }
-          }
-          PAIR.set("*","*");
-          context.write(PAIR, ONE);
         }
+        KEY.set("*");
+        context.write(KEY,ONE);
         
     }
+  }
 
-   private static final class MyCombinerCount extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+  private static final class MyCombinerCount extends
+            Reducer<Text, IntWritable, Text, IntWritable> {
         private static final IntWritable SUM = new IntWritable();
 
         @Override
-        public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
-            throws IOException, InterruptedException {
-            int sum = 0;
-            Iterator<IntWritable> iter = values.iterator();
-            while (iter.hasNext()) {
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            // Sum up values.
+        Iterator<IntWritable> iter = values.iterator();
+        int sum = 0;
+        while (iter.hasNext()) {
             sum += iter.next().get();
-            }
+        }
+        
             SUM.set(sum);
             context.write(key, SUM);
+        
         }
     }
 
-  // Reducer: sums up all the occurrences.
-  public static final class MyReducerCount extends Reducer<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
-    // Reuse objects.
+  private static final class MyReducerCount extends Reducer<Text, IntWritable, Text, IntWritable> {
     private static final IntWritable SUM = new IntWritable();
-    private static final PairOfStrings PAIR = new PairOfStrings();
-    private int threshold = 10;
     @Override
-    public void setup(Context context) {
-        threshold = context.getConfiguration().getInt("threshold", 10);
-    }
-
-
-    @Override
-    public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      // Sum up values.
-      Iterator<IntWritable> iter = values.iterator();
-      int sum = 0;
-      while (iter.hasNext()) {
-        sum += iter.next().get();
-      }
-      if(sum>=threshold){
-        SUM.set(sum);
-        context.write(key, SUM);
-      }
-    }
+          // Sum up values.
+          Iterator<IntWritable> iter = values.iterator();
+          int sum = 0;
+          while (iter.hasNext()) {
+              sum += iter.next().get();
+          }
+          
+              SUM.set(sum);
+              context.write(key, SUM);
+        } 
   }
   private static final class MyPartitionerCount extends Partitioner<PairOfStrings, IntWritable> {
     @Override
@@ -125,19 +104,30 @@ public class PairsPMI extends Configured implements Tool {
   }
     
 
-  private static final class MyMapperPMI extends Mapper<PairOfStrings, IntWritable, PairOfStrings, IntWritable> {
+  private static final class MyMapperPMI extends Mapper<LongWritable, Text, PairOfStrings, IntWritable> {
     private static final PairOfStrings PAIR = new PairOfStrings();
     private static final IntWritable COUNT = new IntWritable();
     
 
     @Override
-    public void map(PairOfStrings key, IntWritable value, Context context)
+    public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
-        if (key.getRightElement().equals("*")){
-            wordTotal.put(key.getLeftElement(),value.get());
-        }
-        context.write(key, value);
-
+            List<String> tokens = Tokenizer.tokenize(value.toString());
+            ArrayList<String> wordAppearOutter = new ArrayList<String>();
+            for (int i = 0; i < Math.min(40, tokens.size()); i++) {
+                if (wordAppearOutter.contains(tokens.get(i))) continue;
+                wordAppearOutter.add(tokens.get(i));
+                ArrayList<String> wordAppearInner = new ArrayList<String>();
+                wordAppearInner.add(tokens.get(i));
+                for (int j = 0; j < Math.min(40, tokens.size()); j++) {
+                  if (i == j) continue;
+                  if (wordAppearInner.contains(tokens.get(j))) continue;
+                  wordAppearInner.add(tokens.get(j));
+                  PAIR.set(tokens.get(i), tokens.get(j));
+                  context.write(PAIR, ONE);
+                }
+              }
+            
     }
   }
 
@@ -166,8 +156,24 @@ public class PairsPMI extends Configured implements Tool {
 
     @Override
     public void setup(Context context) {
-        totalAppear = wordTotal.get("*");
+        
         threshold = context.getConfiguration().getInt("threshold", 10);
+        //read file
+        Path path = new Path("intermediate/part-r-00000");
+
+        Text key = new Text();
+        IntWritable value = new IntWritable();
+        SequenceFile.Reader reader =
+                    new SequenceFile.Reader(context.getConfiguration(), SequenceFile.Reader.file(path));
+
+        while (reader.next(key, value)) {
+            if (key.toString().equals("*")) {
+                totalLine = value.get();
+            } else {
+                wordTotal.put(key.toString(), value.get());
+            }
+        }
+        reader.close();
     }
 
     @Override
@@ -189,8 +195,10 @@ public class PairsPMI extends Configured implements Tool {
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
       }
-    }
+    
   }
+
+  
 
   private static final class MyPartitionerPMI extends Partitioner<PairOfStrings, IntWritable> {
     @Override
@@ -256,9 +264,9 @@ public class PairsPMI extends Configured implements Tool {
     FileInputFormat.setInputPaths(job1, new Path(args.input));
     FileOutputFormat.setOutputPath(job1, new Path(intermediateDir));
 
-    job1.setMapOutputKeyClass(PairOfStrings.class);
+    job1.setMapOutputKeyClass(Text.class);
     job1.setMapOutputValueClass(IntWritable.class);
-    job1.setOutputKeyClass(PairOfStrings.class);
+    job1.setOutputKeyClass(Text.class);
     job1.setOutputValueClass(IntWritable.class);
     //set output format
     job1.setOutputFormatClass(SequenceFileOutputFormat.class);
@@ -291,7 +299,7 @@ public class PairsPMI extends Configured implements Tool {
 
     job2.setNumReduceTasks(args.numReducers);
 
-    FileInputFormat.setInputPaths(job2, new Path(intermediateDir));
+    FileInputFormat.setInputPaths(job2, new Path(args.input));
     FileOutputFormat.setOutputPath(job2, new Path(args.output));
 
     job2.setMapOutputKeyClass(PairOfStrings.class);
