@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.ArrayList;
 import org.apache.hadoop.mapreduce.Partitioner;
 import tl.lin.data.pair.PairOfStrings;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.Reader;
 
 public class StripesPMI extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(StripesPMI.class);
@@ -84,6 +86,7 @@ public class StripesPMI extends Configured implements Tool {
 
 
   private static final class MyReducerCount extends Reducer<Text, IntWritable, Text, IntWritable> {
+    private static final IntWritable SUM = new IntWritable();
     @Override
     public void reduce(Text key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
@@ -155,7 +158,7 @@ public class StripesPMI extends Configured implements Tool {
         //read file
         Path path = new Path("intermediate");
 
-        Text key = new PairOfStrings();
+        Text key = new Text();
         IntWritable value = new IntWritable();
         SequenceFile.Reader reader =
                     new SequenceFile.Reader(context.getConfiguration(), SequenceFile.Reader.file(path));
@@ -288,7 +291,6 @@ public class StripesPMI extends Configured implements Tool {
     FileInputFormat.setInputPaths(job2, new Path(args.input));
     FileOutputFormat.setOutputPath(job2, new Path(args.output));
 
-    job2.setInputFormatClass(TextInputFormat.class);
     //set output format
     job2.setOutputFormatClass(TextOutputFormat.class);
 
