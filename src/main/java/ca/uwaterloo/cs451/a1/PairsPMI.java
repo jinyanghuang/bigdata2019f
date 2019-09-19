@@ -36,8 +36,10 @@ import java.util.Map;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+public class PairsPMI extends Configured implements Tool {
+    private static final Logger LOG = Logger.getLogger(PairsPMI.class);
 
-private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, IntWritable> {
+  private static final class MyMapperCount extends Mapper<LongWritable, Text, Text, IntWritable> {
     private static final Text KEY = new Text();
     private static final IntWritable ONE = new IntWritable(1);
     
@@ -62,10 +64,10 @@ private static final class MyMapperCount extends Mapper<LongWritable, Text, Text
 
   private static final class MyCombinerCount extends
             Reducer<Text, IntWritable, Text, IntWritable> {
-        private static final IntWritable SUM = new IntWritable();
+    private static final IntWritable SUM = new IntWritable();
 
-        @Override
-        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+    @Override
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
             // Sum up values.
         Iterator<IntWritable> iter = values.iterator();
@@ -195,6 +197,7 @@ private static final class MyMapperCount extends Mapper<LongWritable, Text, Text
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
       }
+    }
     
   }
 
