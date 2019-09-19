@@ -46,50 +46,46 @@ public class StripesPMI extends Configured implements Tool {
     @Override
     public void map(LongWritable key, Text value, Context context)
         throws IOException, InterruptedException {
-      List<String> tokens = Tokenizer.tokenize(value.toString());
-    //   ArrayList<String> wordAppearOutter = new ArrayList<String>();
-    //   for (int i = 0; i < Math.min(40, tokens.size()); i++) {
-    //     if (wordAppearOutter.contains(tokens.get(i))) continue;
-    //     wordAppearOutter.add(tokens.get(i));
-    //     MAP.increment("*");
-    //     MAP.clear();
-    //     for (int j = 0; j < Math.min(40, tokens.size()); j++) {
-    //       if (i == j) continue;
-    //       if (tokens.get(i).equals(tokens.get(j))) continue;
-    //       if (MAP.containsKey(tokens.get(j))) continue;
-    //       MAP.increment(tokens.get(j));
-    //     }
-        
-    //     KEY.set(tokens.get(i));
-    //     context.write(KEY, MAP);
-    //   }
+        List<String> tokens = Tokenizer.tokenize(value.toString());
         ArrayList<String> wordAppear = new ArrayList<String>();
-            for (int i = 0; i < tokens.size() && i < 40; i++) {
-                String word = tokens.get(i);
-                if (!wordAppear.contains(word)) {
-                    wordAppear.add(word); //check if 1 can be Integer
-                }
+        for (int i = 0; i < tokens.size() && i < 40; i++) {
+            String word = tokens.get(i);
+            if (!wordAppear.contains(word)) {
+                wordAppear.add(word); //check if 1 can be Integer
             }
-            for (int i = 0; i < wordAppear.size(); i++) {
-                MAP.clear();
-                MAP.increment("*");
-                KEY.set(wordAppear.get(i));
-                for (int j = 0; j < wordAppear.size(); j++) {
-                    if (i == j)continue;
-                    MAP.increment(wordAppear.get(j));
-                }
-                context.write(KEY, MAP);
+        }
+        for (int i = 0; i < wordAppear.size(); i++) {
+            MAP.clear();
+            MAP.increment("*");
+            KEY.set(wordAppear.get(i));
+            for (int j = 0; j < wordAppear.size(); j++) {
+                if (i == j)continue;
+                MAP.increment(wordAppear.get(j));
             }
-      totalLine++;
+            context.write(KEY, MAP);
+        }
+        totalLine++;
     }
   }
 
-  private static final class MyReducerCount extends Reducer<Text, HMapStIW, Text, HMapStIW> {
-    private int threshold = 10;
-    @Override
-    public void setup(Context context) {
-        threshold = context.getConfiguration().getInt("threshold", 10);
+  private static final class MyCombinerCount extends
+            Reducer<Text, HMapStIW, Text, HMapStIW> {
+        private static final IntWritable SUM = new IntWritable();
+
+        @Override
+        public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+                throws IOException, InterruptedException {
+            Iterator<HMapStIW> iter = values.iterator();
+            HMapStIW map = new HMapStIW();
+            while (iter.hasNext()) {
+                map.plus(iter.next());
+            }
+            context.write(key, map);
+        }
     }
+
+
+  private static final class MyReducerCount extends Reducer<Text, HMapStIW, Text, HMapStIW> {
     @Override
     public void reduce(Text key, Iterable<HMapStIW> values, Context context)
         throws IOException, InterruptedException {
@@ -99,10 +95,9 @@ public class StripesPMI extends Configured implements Tool {
       while (iter.hasNext()) {
         map.plus(iter.next());
       }
-      //if(map.get("*")>=threshold){
-        wordTotal.put(key.toString(), map.get("*"));
-        context.write(key, map);
-      //}
+      
+      wordTotal.put(key.toString(), map.get("*"));
+      context.write(key, map);
     }
   }
 
@@ -110,11 +105,26 @@ public class StripesPMI extends Configured implements Tool {
       @Override
       public void map (Text key, HMapStIW map, Context context)
         throws IOException, InterruptedException{
-        // wordTotal.put(key.toString(), map.get("*"));
         context.write(key, map);
       }
   }
   
+  private static final class MyCombinerPMI extends
+            Reducer<Text, HMapStIW, Text, HMapStIW> {
+        private static final IntWritable SUM = new IntWritable();
+
+        @Override
+        public void reduce(Text key, Iterable<HMapStIW> values, Context context)
+                throws IOException, InterruptedException {
+            Iterator<HMapStIW> iter = values.iterator();
+            HMapStIW map = new HMapStIW();
+            while (iter.hasNext()) {
+                map.plus(iter.next());
+            }
+            context.write(key, map);
+        }
+    }
+
   private static final class MyReducerPMI extends Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings>{
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
     private static final PairOfStrings KEYPAIR = new PairOfStrings();
@@ -211,7 +221,7 @@ public class StripesPMI extends Configured implements Tool {
     job1.setOutputValueClass(HMapStIW.class);
 
     job1.setMapperClass(MyMapperCount.class);
-    job1.setCombinerClass(MyReducerCount.class);
+    job1.setCombinerClass(MyCombinerCount.class);
     job1.setReducerClass(MyReducerCount.class);
     //set output format
     job1.setOutputFormatClass(SequenceFileOutputFormat.class);
@@ -252,7 +262,7 @@ public class StripesPMI extends Configured implements Tool {
     job2.setOutputValueClass(PairOfStrings.class);
 
     job2.setMapperClass(MyMapperPMI.class);
-    // job2.setCombinerClass(MyReducerPMI.class);
+    job2.setCombinerClass(MyCombinerPMI.class);
     job2.setReducerClass(MyReducerPMI.class);
 
     job2.waitForCompletion(true);
