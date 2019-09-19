@@ -152,7 +152,7 @@ public class StripesPMI extends Configured implements Tool {
     private static int threshold = 10;
     private static int totalLine = 0;
     @Override
-    public void setup(Context context) {
+    public void setup(Context context) throws IOException{
         threshold = context.getConfiguration().getInt("threshold", 10);
 
         //read file
