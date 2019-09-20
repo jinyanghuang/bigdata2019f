@@ -186,7 +186,6 @@ public class StripesPMI extends Configured implements Tool {
                 double pmi = Math.log10(count * totalLine/(numX * numY));
                 VALUEPAIR.set(String.valueOf(pmi),String.valueOf(count));
                 result.set(term,VALUEPAIR);
-                context.write(KEYPAIR,VALUEPAIR);
             }
         }
         if (!result.isEmpty()) {
