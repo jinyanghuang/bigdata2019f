@@ -142,9 +142,8 @@ public class StripesPMI extends Configured implements Tool {
         }
     }
 
-  private static final class MyReducerPMI extends Reducer<Text, HMapStIW, PairOfStrings, PairOfStrings>{
+  private static final class MyReducerPMI extends Reducer<Text, HMapStIW, Text, HashMap>{
     private static final PairOfStrings VALUEPAIR = new PairOfStrings();
-    private static final PairOfStrings KEYPAIR = new PairOfStrings();
     private static Map<String,Integer> wordTotal = new HashMap<String,Integer>();
     private static int threshold = 10;
     private static int totalLine = 0;
@@ -174,7 +173,7 @@ public class StripesPMI extends Configured implements Tool {
         throws IOException, InterruptedException{
         Iterator<HMapStIW> iter = values.iterator();
         HMapStIW map = new HMapStIW();
-
+        HashMap<String, PairOfStrings> result = new HashMap<String, PairOfStrings>();
         while(iter.hasNext()){
             map.plus(iter.next());
         }
@@ -186,9 +185,12 @@ public class StripesPMI extends Configured implements Tool {
                 float numY = wordTotal.get(term);
                 double pmi = Math.log10(count * totalLine/(numX * numY));
                 VALUEPAIR.set(String.valueOf(pmi),String.valueOf(count));
-                KEYPAIR.set(key.toString(),term);
+                result.set(term,VALUEPAIR);
                 context.write(KEYPAIR,VALUEPAIR);
             }
+        }
+        if (!result.isEmpty()) {
+            context.write(key.toString(), result);
         }
       }
 
@@ -293,8 +295,8 @@ public class StripesPMI extends Configured implements Tool {
 
     job2.setMapOutputKeyClass(Text.class);
     job2.setMapOutputValueClass(HMapStIW.class);
-    job2.setOutputKeyClass(PairOfStrings.class);
-    job2.setOutputValueClass(PairOfStrings.class);
+    job2.setOutputKeyClass(Text.class);
+    job2.setOutputValueClass(HashMap.class);
 
     job2.setMapperClass(MyMapperPMI.class);
     job2.setCombinerClass(MyCombinerPMI.class);
