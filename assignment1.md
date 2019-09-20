@@ -34,7 +34,7 @@ you and thy has lowest connection</p>
 (hockey, winger)	(2.370091779477945, 188)
 (hockey, sledge)	(2.352184933207967, 93)
 (hockey, goaltender)	(2.253738491028581, 199)
-(hockey, nhl)	(1.9956358639715683, 971)</p>
+(hockey, ice)	(2.2093476349398986, 2160.0)</p>
 <h1>Question 8</h1>
 <p>(data, cooling)	(2.0979041149039497, 74)
 (data, encryption)	(2.0443724251833877, 53)
