@@ -185,11 +185,11 @@ public class StripesPMI extends Configured implements Tool {
                 float numY = wordTotal.get(term);
                 double pmi = Math.log10(count * totalLine/(numX * numY));
                 VALUEPAIR.set(String.valueOf(pmi),String.valueOf(count));
-                result.set(term,VALUEPAIR);
+                result.put(term,VALUEPAIR);
             }
         }
         if (!result.isEmpty()) {
-            context.write(key.toString(), result);
+            context.write(key, result);
         }
       }
 
