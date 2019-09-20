@@ -180,12 +180,12 @@ public class StripesPMI extends Configured implements Tool {
         }
 
         for (String term : map.keySet()) {
-            int count = map.get(term);
+            float count = map.get(term);
             if(count >= threshold ){
                 float numX = wordTotal.get(key.toString());
                 float numY = wordTotal.get(term);
                 double pmi = Math.log10(count * totalLine/(numX * numY));
-                VALUEPAIR.set(Double.toString(pmi),Integer.toString(count));
+                VALUEPAIR.set(String.valueOf(pmi),Integer.toString(count));
                 KEYPAIR.set(key.toString(),term);
                 context.write(KEYPAIR,VALUEPAIR);
             }
@@ -299,11 +299,7 @@ public class StripesPMI extends Configured implements Tool {
     job2.setMapperClass(MyMapperPMI.class);
     job2.setCombinerClass(MyCombinerPMI.class);
     job2.setReducerClass(MyReducerPMI.class);
-    job2.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);
-    job2.getConfiguration().set("mapreduce.map.memory.mb", "3072");
-    job2.getConfiguration().set("mapreduce.map.java.opts", "-Xmx3072m");
-    job2.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
-    job2.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
+
     job2.waitForCompletion(true);
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
     FileSystem.get(getConf()).delete(intermediatePath, true);
