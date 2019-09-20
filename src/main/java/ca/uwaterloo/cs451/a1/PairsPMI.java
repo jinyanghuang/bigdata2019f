@@ -185,7 +185,7 @@ public class PairsPMI extends Configured implements Tool {
     public void reduce(PairOfStrings key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       Iterator<IntWritable> iter = values.iterator();
-      int sum = 0;
+      float sum = 0;
       while (iter.hasNext()) {
         sum += iter.next().get();
       }
@@ -195,7 +195,7 @@ public class PairsPMI extends Configured implements Tool {
       float numY = wordTotal.get(key.getRightElement());
 
       double pmi = Math.log10(sum * totalLine/(numX * numY));
-      VALUEPAIR.set(Double.toString(pmi),Integer.toString(sum));
+      VALUEPAIR.set(String.valueOf(pmi),Integer.toString(sum));
 
     //   SUM.set(sum);
       context.write(key, VALUEPAIR);
@@ -319,11 +319,6 @@ public class PairsPMI extends Configured implements Tool {
     job2.setCombinerClass(MyCombinerPMI.class);
     job2.setReducerClass(MyReducerPMI.class);
     job2.setPartitionerClass(MyPartitionerPMI.class);
-    job2.getConfiguration().setInt("mapred.max.split.size", 1024 * 1024 * 32);
-    job2.getConfiguration().set("mapreduce.map.memory.mb", "3072");
-    job2.getConfiguration().set("mapreduce.map.java.opts", "-Xmx3072m");
-    job2.getConfiguration().set("mapreduce.reduce.memory.mb", "3072");
-    job2.getConfiguration().set("mapreduce.reduce.java.opts", "-Xmx3072m");
 
 //     long startTime = System.currentTimeMillis();
     job2.waitForCompletion(true);
