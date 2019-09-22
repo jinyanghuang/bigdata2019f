@@ -32,7 +32,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object BigramCount extends Tokenizer {
+object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
@@ -53,8 +53,8 @@ object BigramCount extends Tokenizer {
       .flatMap(line => {
         val tokens = tokenize(line)
         if (tokens.length > 1){
-          val bigram = tokens.sliding(2).map(p => p.mkString(" ")).toList
-          val bigramStar = tokens.sliding(1).map(q => q,"*")).toList
+          val bigram = tokens.sliding(2).map(p => (p.head,p.last) ).toList
+          val bigramStar = tokens.sliding(1).map(q => (q.head,"*")).toList
           bigram++bigramStar
         }  else List()
       })
