@@ -48,18 +48,31 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
     val outputDir = new Path(args.output())
     FileSystem.get(sc.hadoopConfiguration).delete(outputDir, true)
 
-    val textFile = sc.textFile(args.input())
+    var sum = 0.0
+    val textFile = sc.textFile(args.input(), args.reducers())
     val counts = textFile
       .flatMap(line => {
         val tokens = tokenize(line)
         if (tokens.length > 1){
-          val bigram = tokens.sliding(2).map(p => (p.head,p.last) ).toList
-          val bigramStar = tokens.sliding(1).map(q => (q.head,"*")).toList
-          bigram++bigramStar
+          val pair = tokens.sliding(2).map(p => (p.head,p.last) ).toList
+          val pairStar = tokens.init.sliding(1).map(q => (q.head,"*")).toList
+          pair++pairStar
         }  else List()
       })
-      .map(bigram => (bigram, 1))
+      .map(pair => (pair, 1))
       .reduceByKey(_ + _)
+      .sortByKey()
+      .map(
+        pair => pair._1 match {
+        case (_,"*") => {
+           sum = pair._2
+           (pair._1, pair._2)
+        }
+        case(_,_) => {
+          (pair._1, pair._2/sum)
+        }
+        })
+
     counts.saveAsTextFile(args.output())
   }
 }
