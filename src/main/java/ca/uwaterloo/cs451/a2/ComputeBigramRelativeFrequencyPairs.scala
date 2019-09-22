@@ -52,7 +52,11 @@ object BigramCount extends Tokenizer {
     val counts = textFile
       .flatMap(line => {
         val tokens = tokenize(line)
-        if (tokens.length > 1) tokens.sliding(2).map(p => p.mkString(" ")).toList else List()
+        if (tokens.length > 1){
+          val bigram = tokens.sliding(2).map(p => p.mkString(" ")).toList
+          val bigramStar = tokens.sliding(1).map(q => q,"*")).toList
+          bigram++bigramStar
+        }  else List()
       })
       .map(bigram => (bigram, 1))
       .reduceByKey(_ + _)
