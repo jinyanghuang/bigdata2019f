@@ -25,23 +25,16 @@ import org.apache.spark.SparkConf
 import org.rogach.scallop._
 import org.apache.spark.Partitioner
 import org.apache.spark.HashPartitioner
-import java.util.ArrayList
+import scala.collection.mutable.ListBuffer
+
 
 class Conf3(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, output, reducers)
   val input = opt[String](descr = "input path", required = true)
   val output = opt[String](descr = "output path", required = true)
   val reducers = opt[Int](descr = "number of reducers", required = false, default = Some(1))
+  val threshold = opt[Int](descr = "number of threshold", required = false, default = Some(10))
   verify()
-}
-
-class MyPartitioner(partitions: Int) extends Partitioner {
-  require(partitions >= 0)
-  def numPartitions: Int = partitions
-  def getPartition(key: Any): Int = key match {
-    case null => 0
-    case (key1,key2) => (key1.hashCode & Integer.MAX_VALUE) % numPartitions
-  }
 }
 
 object PairsPMI extends Tokenizer {
@@ -53,6 +46,7 @@ object PairsPMI extends Tokenizer {
     log.info("Input: " + args.input())
     log.info("Output: " + args.output())
     log.info("Number of reducers: " + args.reducers())
+    log.info("Number of threshold: " + args.threshold())
 
     val conf = new SparkConf().setAppName("Bigram Count")
     val sc = new SparkContext(conf)
@@ -60,33 +54,40 @@ object PairsPMI extends Tokenizer {
     val outputDir = new Path(args.output())
     FileSystem.get(sc.hadoopConfiguration).delete(outputDir, true)
 
-    var sum = 0.0
     val textFile = sc.textFile(args.input(), args.reducers())
-    textFile
+    val wordCount = textFile
       .flatMap(line => {
-        val tokens = tokenize(line).take(40)
-        var wordAppear = new ArrayList[String]
-        if (tokens.length > 1){
-          val pair = tokens.sliding(2).map(p => (p.head,p.last) ).toList
-          val pairStar = tokens.init.sliding(1).map(q => (q.head,"*")).toList
-          pair++pairStar
-        }  else List()
+        tokenize(line).take(Math.min(40, line.length)).distinct
       })
-      .map(pair => (pair, 1))
-      .repartitionAndSortWithinPartitions(new MyPartitioner(args.reducers()))
+      .map(word => (word, 1))
       .reduceByKey(_ + _)
       .sortByKey()
-      .map(
-        pair => pair._1 match {
-        case (_,"*") => {
-           sum = pair._2
-           (pair._1, pair._2)
+      .collectAsMap()
+    val broadcastWordCount = sc.broadcast(wordCount)
+    var totalLines : Float = textFile.count()
+    val threshold = args.threshold()
+    textFile
+     .flatMap(line => {
+        val tokens = tokenize(line).take(Math.min(40, line.length)).distinct
+        val occurrences = new ListBuffer[(String,String)]()
+        for (i <- tokens){
+            for (j <- tokens){
+                if(i!=j){
+                    occurrences.addOne(i,j)
+                }
+            }
         }
-        case(_,_) => {
-          (pair._1, pair._2/sum)
-        }
-        })
-
-    .saveAsTextFile(args.output())
+        occurrences.toList
+     })
+     .map(word => (word, 1))
+     .reduceByKey(_ + _)
+     .sortByKey()
+     .filter(_._2 >= threshold)
+     .map(pair => {
+         val sum = pair._2
+         val pmi = log10(pair._2 * totalLines/(broadcastWordCount.getValue().get(pair._1._1) * broadcastWordCount.getValue().get(pair._1._2)))
+         (pair._1,(pmi,sum))
+     })
+     .saveAsTextFile(args.output)
   }
 }
