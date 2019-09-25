@@ -25,6 +25,7 @@ import org.apache.spark.SparkConf
 import org.rogach.scallop._
 import org.apache.spark.Partitioner
 import org.apache.spark.HashPartitioner
+import java.util.ArrayList
 
 class Conf3(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, output, reducers)
@@ -63,7 +64,8 @@ object PairsPMI extends Tokenizer {
     val textFile = sc.textFile(args.input(), args.reducers())
     textFile
       .flatMap(line => {
-        val tokens = tokenize(line)
+        val tokens = tokenize(line).take(40)
+        var wordAppear = new ArrayList[String]
         if (tokens.length > 1){
           val pair = tokens.sliding(2).map(p => (p.head,p.last) ).toList
           val pairStar = tokens.init.sliding(1).map(q => (q.head,"*")).toList
