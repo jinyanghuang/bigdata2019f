@@ -28,7 +28,7 @@ import org.apache.spark.HashPartitioner
 import scala.collection.mutable.ListBuffer
 import scala.math.log10
 
-class Conf3(args: Seq[String]) extends ScallopConf(args) {
+class Conf4(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, output, reducers)
   val input = opt[String](descr = "input path", required = true)
   val output = opt[String](descr = "output path", required = true)
@@ -37,11 +37,11 @@ class Conf3(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object PairsPMI extends Tokenizer {
+object StripesPMI extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
-    val args = new Conf3(argv)
+    val args = new Conf4(argv)
 
     log.info("Input: " + args.input())
     log.info("Output: " + args.output())
@@ -69,12 +69,12 @@ object PairsPMI extends Tokenizer {
     textFile
      .flatMap(line => {
         val tokens = tokenize(line).take(Math.min(40, line.length)).distinct
-        val occurrences = new ListBuffer[(String,Map)]()
+        val occurrences = new ListBuffer[(String,Map[String,Int])]()
         if (tokens.length > 1){
           for (i <- tokens){
             for (j <- tokens){
                 if(i!=j){  
-                  occurrences+=((i,Map(j->1))
+                  occurrences+=((i,Map(j->1)))
                 }
             }
           }
@@ -91,10 +91,12 @@ object PairsPMI extends Tokenizer {
          (stripes._1, stripes._2.filter((pair) => pair._2 >= threshold).map{ 
              case (k,v) => {
          var pmi = log10(v * totalLines/(broadcastWordCount.value(k)*broadcastWordCount.value(stripes._1)))
-         (stripes._1,(k,v,pmi))
+        k + "=(" + pmi + "," + v +")"
+         
      }})
-     
   }
-     ).saveAsTextFile(args.output())
+  ).filter(p=>{p._2.size > 0
+  }).map(stripes =>"("+stripes._1+"," + "{" + (stripes._2 mkString ",")+ "})")
+       .saveAsTextFile(args.output())
 }
 }
