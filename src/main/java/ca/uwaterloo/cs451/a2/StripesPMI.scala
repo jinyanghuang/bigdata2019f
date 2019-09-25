@@ -28,7 +28,7 @@ import org.apache.spark.HashPartitioner
 import scala.collection.mutable.ListBuffer
 import scala.math.log10
 
-class Conf4(args: Seq[String]) extends ScallopConf(args) {
+class Conf3(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, output, reducers)
   val input = opt[String](descr = "input path", required = true)
   val output = opt[String](descr = "output path", required = true)
@@ -37,11 +37,11 @@ class Conf4(args: Seq[String]) extends ScallopConf(args) {
   verify()
 }
 
-object StripesPMI extends Tokenizer {
+object PairsPMI extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
-    val args = new Conf4(argv)
+    val args = new Conf3(argv)
 
     log.info("Input: " + args.input())
     log.info("Output: " + args.output())
@@ -69,12 +69,12 @@ object StripesPMI extends Tokenizer {
     textFile
      .flatMap(line => {
         val tokens = tokenize(line).take(Math.min(40, line.length)).distinct
-        val occurrences = new ListBuffer[(String,String)]()
+        val occurrences = new ListBuffer[(String,Map)]()
         if (tokens.length > 1){
           for (i <- tokens){
             for (j <- tokens){
                 if(i!=j){  
-                  occurrences+=((i,j))
+                  occurrences+=((i,Map(j->1))
                 }
             }
           }
@@ -83,16 +83,18 @@ object StripesPMI extends Tokenizer {
          List()
         }
         })
-    
-     .map(word => (word, 1))
-   .reduceByKey(_ + _)
+     .reduceByKey((value1,value2)=>{
+          value1 ++ value2.map{ case (k,v) => (k,v + value1.getOrElse(k,0))}
+      })
      .sortByKey()
-     .filter(_._2 >= threshold)
-     .map(pair => {
-         var sum = pair._2
-         var pmi = log10(pair._2 * totalLines/(broadcastWordCount.value(pair._1._1) * broadcastWordCount.value(pair._1._2)))
-         (pair._1,(pmi,sum))
-     })
-    .saveAsTextFile(args.output())
+     .map(stripes => { 
+         (stripes._1, stripes._2.filter((pair) => pair._2 >= threshold).map{ 
+             case (k,v) => {
+         var pmi = log10(v * totalLines/(broadcastWordCount.value(k)*broadcastWordCount.value(stripes._1)))
+         (stripes._1,(k,v,pmi))
+     }})
+     
   }
+     ).saveAsTextFile(args.output())
+}
 }
