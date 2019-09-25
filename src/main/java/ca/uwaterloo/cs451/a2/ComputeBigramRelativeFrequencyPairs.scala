@@ -23,6 +23,8 @@ import org.apache.hadoop.fs._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.rogach.scallop._
+import org.apache.spark.Partitioner
+import org.apache.spark.HashPartitioner
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, output, reducers)
@@ -30,6 +32,15 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   val output = opt[String](descr = "output path", required = true)
   val reducers = opt[Int](descr = "number of reducers", required = false, default = Some(1))
   verify()
+}
+
+class MyPartitioner(partitions: Int) extends Partitioner {
+  require(partitions >= 0)
+  def numPartitions: Int = partitions
+  def getPartition(key: Any): Int = key match {
+    case null => 0
+    case (key1,key2) => (key1.hashCode & Integer.MAX_VALUE) % numPartitions
+  }
 }
 
 object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
@@ -50,7 +61,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
 
     var sum = 0.0
     val textFile = sc.textFile(args.input(), args.reducers())
-    val counts = textFile
+    textFile
       .flatMap(line => {
         val tokens = tokenize(line)
         if (tokens.length > 1){
@@ -60,6 +71,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
         }  else List()
       })
       .map(pair => (pair, 1))
+      .repartitionAndSortWithinPartitions(new MyPartitioner(args.reducers()))
       .reduceByKey(_ + _)
       .sortByKey()
       .map(
@@ -73,6 +85,6 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
         }
         })
 
-    counts.saveAsTextFile(args.output())
+    .saveAsTextFile(args.output())
   }
 }
