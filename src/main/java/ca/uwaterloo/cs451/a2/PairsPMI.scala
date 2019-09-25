@@ -26,7 +26,7 @@ import org.rogach.scallop._
 import org.apache.spark.Partitioner
 import org.apache.spark.HashPartitioner
 import scala.collection.mutable.ListBuffer
-
+import scala.math.log10
 
 class Conf3(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, output, reducers)
@@ -48,7 +48,7 @@ object PairsPMI extends Tokenizer {
     log.info("Number of reducers: " + args.reducers())
     log.info("Number of threshold: " + args.threshold())
 
-    val conf = new SparkConf().setAppName("Bigram Count")
+    val conf = new SparkConf().setAppName("Pairs PMI")
     val sc = new SparkContext(conf)
 
     val outputDir = new Path(args.output())
@@ -70,24 +70,29 @@ object PairsPMI extends Tokenizer {
      .flatMap(line => {
         val tokens = tokenize(line).take(Math.min(40, line.length)).distinct
         val occurrences = new ListBuffer[(String,String)]()
-        for (i <- tokens){
+        if (tokens.length > 1){
+          for (i <- tokens){
             for (j <- tokens){
-                if(i!=j){
-                    occurrences.addOne(i,j)
+                if(i!=j){  
+                  occurrences+=((i,j))
                 }
             }
+          }
+          occurrences.toList
+        } else{
+         List()
         }
-        occurrences.toList
-     })
+        })
+    
      .map(word => (word, 1))
-     .reduceByKey(_ + _)
+   .reduceByKey(_ + _)
      .sortByKey()
      .filter(_._2 >= threshold)
      .map(pair => {
-         val sum = pair._2
-         val pmi = log10(pair._2 * totalLines/(broadcastWordCount.getValue().get(pair._1._1) * broadcastWordCount.getValue().get(pair._1._2)))
+         var sum = pair._2
+         var pmi = log10(pair._2 * totalLines/(broadcastWordCount.value(pair._1._1) * broadcastWordCount.value(pair._1._2)))
          (pair._1,(pmi,sum))
      })
-     .saveAsTextFile(args.output)
+    .saveAsTextFile(args.output())
   }
 }
