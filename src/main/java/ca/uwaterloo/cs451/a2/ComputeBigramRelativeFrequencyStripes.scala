@@ -29,8 +29,6 @@ class Conf2(args: Seq[String]) extends ScallopConf(args) {
   val input = opt[String](descr = "input path", required = true)
   val output = opt[String](descr = "output path", required = true)
   val reducers = opt[Int](descr = "number of reducers", required = false, default = Some(1))
-  val executors = opt[Int](descr = "number of executors", required = false, default = Some(1))
-  val cores = opt[Int](descr = "number of cores", required = false, default = Some(1))
   verify()
 }
 
@@ -43,8 +41,6 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
     log.info("Input: " + args.input())
     log.info("Output: " + args.output())
     log.info("Number of reducers: " + args.reducers())
-    log.info("Number of executors: " + args.executors())
-    log.info("Number of cores: " + args.cores())
 
     val conf = new SparkConf().setAppName("Bigram Count")
     val sc = new SparkContext(conf)
