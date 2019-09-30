@@ -1,4 +1,4 @@
-package io.bespin.java.mapreduce.search;
+package ca.uwaterloo.cs451.a3;
 
 import io.bespin.java.util.Tokenizer;
 import org.apache.hadoop.conf.Configured;
