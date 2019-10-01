@@ -49,7 +49,7 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
     FileSystem.get(sc.hadoopConfiguration).delete(outputDir, true)
 
     var sum = 0.0
-    val textFile = sc.textFile(args.input(), args.reducers())
+    val textFile = sc.textFile(args.input())
     textFile
       .flatMap(line => {
         val tokens = tokenize(line)
@@ -58,10 +58,9 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
           
         } else List()
       })
-   .repartition(args.reducers())
         .reduceByKey((value1,value2)=>{
           value1 ++ value2.map{ case (k,v) => (k,v + value1.getOrElse(k,0))}
-      })
+      },args.reducers())
       .sortByKey()
        .map(
          stripes => {
