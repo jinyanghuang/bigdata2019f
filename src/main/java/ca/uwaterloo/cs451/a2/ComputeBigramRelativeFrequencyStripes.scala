@@ -58,11 +58,11 @@ object ComputeBigramRelativeFrequencyStripes extends Tokenizer {
           
         } else List()
       })
+   .repartition(args.reducers())
         .reduceByKey((value1,value2)=>{
           value1 ++ value2.map{ case (k,v) => (k,v + value1.getOrElse(k,0))}
       })
       .sortByKey()
-      .repartition(args.reducers())
        .map(
          stripes => {
            val sum = stripes._2.values.foldLeft(0.0)((x,y)=> x + y)
