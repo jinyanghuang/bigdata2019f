@@ -60,7 +60,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
     FileSystem.get(sc.hadoopConfiguration).delete(outputDir, true)
 
     var sum = 0.0
-    val textFile = sc.textFile(args.input(), args.reducers())
+    val textFile = sc.textFile(args.input())
     textFile
       .flatMap(line => {
         val tokens = tokenize(line)
@@ -72,7 +72,7 @@ object ComputeBigramRelativeFrequencyPairs extends Tokenizer {
       })
       .map(pair => (pair, 1))
       .repartitionAndSortWithinPartitions(new MyPartitioner(args.reducers()))
-      .reduceByKey(_ + _)
+      .reduceByKey(_ + _,args.reducers())
       .sortByKey()
       .map(
         pair => pair._1 match {
