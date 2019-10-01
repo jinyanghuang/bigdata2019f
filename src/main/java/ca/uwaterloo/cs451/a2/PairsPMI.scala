@@ -85,7 +85,7 @@ object PairsPMI extends Tokenizer {
         })
     
      .map(word => (word, 1))
-   .reduceByKey(_ + _)
+   .reduceByKey(_ + _,args.reducers())
      .sortByKey()
      .filter(_._2 >= threshold)
      .map(pair => {
