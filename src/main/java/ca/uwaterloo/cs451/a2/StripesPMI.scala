@@ -54,7 +54,7 @@ object StripesPMI extends Tokenizer {
     val outputDir = new Path(args.output())
     FileSystem.get(sc.hadoopConfiguration).delete(outputDir, true)
 
-    val textFile = sc.textFile(args.input(), args.reducers())
+    val textFile = sc.textFile(args.input())
     val wordCount = textFile
       .flatMap(line => {
         tokenize(line).take(Math.min(40, line.length)).distinct
@@ -85,7 +85,7 @@ object StripesPMI extends Tokenizer {
         })
      .reduceByKey((value1,value2)=>{
           value1 ++ value2.map{ case (k,v) => (k,v + value1.getOrElse(k,0))}
-      })
+      },args.reducers())
      .sortByKey()
      .map(stripes => { 
          (stripes._1, stripes._2.filter((pair) => pair._2 >= threshold).map{ 
