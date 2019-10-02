@@ -80,7 +80,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     // private static final IntWritable TF = new IntWritable();
     private String termPrev = null;
     private ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();
-    private long pDocon = 0;
+    private Long pDocon = 0;
     private ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     private DataOutputStream outputStream = new DataOutputStream(byteStream);
     private Text term = new Text();
