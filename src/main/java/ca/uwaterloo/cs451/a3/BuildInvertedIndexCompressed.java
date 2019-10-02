@@ -43,7 +43,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
   private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringLong, IntWritable> {
     // private static final Text WORD = new Text();
-    private static final PairOfStringInt WORDDIDPAIR = new PairOfStringInt();
+    private static final PairOfStringLong WORDDIDPAIR = new PairOfStringLong();
     private static final IntWritable FREQUENCY = new IntWritable();
     private static final Object2IntFrequencyDistribution<String> COUNTS =
         new Object2IntFrequencyDistributionEntry<>();
