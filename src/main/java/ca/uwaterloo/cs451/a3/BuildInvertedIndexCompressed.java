@@ -68,9 +68,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
   }
 
-  private static final class MyPartitioner extends Partitioner<PairOfStringInt, IntWritable> {
+  private static final class MyPartitioner extends Partitioner<PairOfStringLong, IntWritable> {
     @Override
-    public int getPartition(PairOfStringInt key, IntWritable value, int numReduceTasks) {
+    public int getPartition(PairOfStringLong key, IntWritable value, int numReduceTasks) {
       return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
     }
   }
@@ -86,7 +86,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     private Text term = new Text();
 
     @Override
-    public void reduce(PairOfStringInt key, Iterable<IntWritable> values, Context context)
+    public void reduce(PairOfStringLong key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       Iterator<IntWritable> iter = values.iterator();
       ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();      
