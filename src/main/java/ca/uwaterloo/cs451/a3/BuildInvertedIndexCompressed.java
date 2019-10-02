@@ -27,6 +27,7 @@ import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfObjectInt;
 import tl.lin.data.pair.PairOfWritables;
 import tl.lin.data.pair.PairOfStringInt;
+import tl.lin.data.pair.PairOfStringLong;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.WritableUtils;
 import java.io.ByteArrayOutputStream;
@@ -35,11 +36,12 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.hadoop.mapreduce.Partitioner;
 
 public class BuildInvertedIndexCompressed extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
-  private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, IntWritable> {
+  private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringLong, IntWritable> {
     // private static final Text WORD = new Text();
     private static final PairOfStringInt WORDDIDPAIR = new PairOfStringInt();
     private static final IntWritable FREQUENCY = new IntWritable();
@@ -59,7 +61,6 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
       // Emit postings.
       for (PairOfObjectInt<String> e : COUNTS) {
-        // WORD.set(e.getLeftElement());
         WORDDIDPAIR.set(e.getLeftElement(),docno.get());
         FREQUENCY.set(e.getRightElement());
         context.write(WORDDIDPAIR, FREQUENCY);
@@ -75,11 +76,11 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
   }
 
   private static final class MyReducer extends
-      Reducer<PairOfStringInt, IntWritable, Text, BytesWritable> {
+      Reducer<PairOfStringLong, IntWritable, Text, BytesWritable> {
     // private static final IntWritable TF = new IntWritable();
     private String termPrev = null;
     private ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();
-    private int pDocon = 0;
+    private long pDocon = 0;
     private ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     private DataOutputStream outputStream = new DataOutputStream(byteStream);
     private Text term = new Text();
@@ -161,7 +162,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     FileInputFormat.setInputPaths(job, new Path(args.input));
     FileOutputFormat.setOutputPath(job, new Path(args.output));
 
-    job.setMapOutputKeyClass(PairOfStringInt.class);
+    job.setMapOutputKeyClass(PairOfStringLong.class);
     job.setMapOutputValueClass(IntWritable.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(BytesWritable.class);
