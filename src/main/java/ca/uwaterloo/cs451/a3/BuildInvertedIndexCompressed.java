@@ -112,10 +112,12 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
 
     public void cleanup(Context context) throws IOException, InterruptedException{
-        term.set(termPrev);
-        context.write(term,new BytesWritable(byteStream.toByteArray()));
-        byteStream.reset();
-        outputStream.flush();
+        if(termPrev != null){
+            term.set(termPrev);
+            context.write(term,new BytesWritable(byteStream.toByteArray()));
+            byteStream.reset();
+            outputStream.flush();
+        }
     }
   }
 
