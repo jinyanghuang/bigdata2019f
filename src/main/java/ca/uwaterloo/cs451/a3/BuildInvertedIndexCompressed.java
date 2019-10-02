@@ -80,7 +80,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     // private static final IntWritable TF = new IntWritable();
     private String termPrev = null;
     private ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();
-    private int pDocon = 0;
+    private long pDocon = 0L;
     private ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     private DataOutputStream outputStream = new DataOutputStream(byteStream);
     private Text term = new Text();
@@ -105,9 +105,9 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       }
 
     //   postings.add(key.getRightElement().get()-pDocon,TF);
-      WritableUtils.writeVInt(outputStream, key.getRightElement().get()-pDocon);
+      WritableUtils.writeVInt(outputStream, (int)(key.getRightElement()-pDocon));
       WritableUtils.writeVInt(outputStream, tf);
-      pDocon = key.getRightElement().get();
+      pDocon = key.getRightElement();
       termPrev = key.getLeftElement().toString();
     }
 
