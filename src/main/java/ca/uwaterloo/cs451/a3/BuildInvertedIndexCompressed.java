@@ -111,7 +111,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       termPrev = key.getLeftElement().toString();
     }
 
-    public void cleanup(Context context) {
+    public void cleanup(Context context) throws IOException{
         term.set(termPrev);
         context.write(term,new BytesWritable(byteStream.toByteArray()));
         byteStream.reset();
