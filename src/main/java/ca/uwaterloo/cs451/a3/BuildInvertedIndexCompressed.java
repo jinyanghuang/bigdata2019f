@@ -91,7 +91,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       Iterator<IntWritable> iter = values.iterator();
       ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();      
 
-      if(!key.getLeftElement().toString().equals(termPrev) && !termPrev.equals(null)){
+      if(!key.getLeftElement().equals(termPrev) && !termPrev.equals(null)){
         
         term.set(termPrev);
         context.write(term,new BytesWritable(byteStream.toByteArray()));
