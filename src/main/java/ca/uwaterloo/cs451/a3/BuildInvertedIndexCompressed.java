@@ -41,9 +41,9 @@ import org.apache.hadoop.mapreduce.Partitioner;
 public class BuildInvertedIndexCompressed extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(BuildInvertedIndexCompressed.class);
 
-  private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringLong, IntWritable> {
+  private static final class MyMapper extends Mapper<LongWritable, Text, PairOfStringInt, IntWritable> {
     // private static final Text WORD = new Text();
-    private static final PairOfStringLong WORDDIDPAIR = new PairOfStringLong();
+    private static final PairOfStringInt WORDDIDPAIR = new PairOfStringInt();
     private static final IntWritable FREQUENCY = new IntWritable();
     private static final Object2IntFrequencyDistribution<String> COUNTS =
         new Object2IntFrequencyDistributionEntry<>();
@@ -61,35 +61,35 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
       // Emit postings.
       for (PairOfObjectInt<String> e : COUNTS) {
-        WORDDIDPAIR.set(e.getLeftElement(),docno.get());
+        WORDDIDPAIR.set(e.getLeftElement(),(int)docno.get());
         FREQUENCY.set(e.getRightElement());
         context.write(WORDDIDPAIR, FREQUENCY);
       }
     }
   }
 
-  private static final class MyPartitioner extends Partitioner<PairOfStringLong, IntWritable> {
+  private static final class MyPartitioner extends Partitioner<PairOfStringInt, IntWritable> {
     @Override
-    public int getPartition(PairOfStringLong key, IntWritable value, int numReduceTasks) {
+    public int getPartition(PairOfStringInt key, IntWritable value, int numReduceTasks) {
       return (key.getLeftElement().hashCode() & Integer.MAX_VALUE) % numReduceTasks;
     }
   }
 
   private static final class MyReducer extends
-      Reducer<PairOfStringLong, IntWritable, Text, BytesWritable> {
+      Reducer<PairOfStringInt, IntWritable, Text, BytesWritable> {
     // private static final IntWritable TF = new IntWritable();
     private String termPrev = null;
     private ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();
-    private long pDocon = 0L;
+    private int pDocon = 0;
     private ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     private DataOutputStream outputStream = new DataOutputStream(byteStream);
     private Text term = new Text();
 
     @Override
-    public void reduce(PairOfStringLong key, Iterable<IntWritable> values, Context context)
+    public void reduce(PairOfStringInt key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       Iterator<IntWritable> iter = values.iterator();
-      ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();      
+      ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();    
 
       if(!key.getLeftElement().equals(termPrev) && !termPrev.equals(null)){
         
@@ -97,7 +97,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         context.write(term,new BytesWritable(byteStream.toByteArray()));
         byteStream.reset();
         outputStream.flush();
-        pDocon = 0L;
+        pDocon = 0;
         // postings.clear();
       }
       int tf = 0;
@@ -106,7 +106,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       }
 
     //   postings.add(key.getRightElement().get()-pDocon,TF);
-      WritableUtils.writeVInt(outputStream, (int)(key.getRightElement()-pDocon));
+      WritableUtils.writeVInt(outputStream, (key.getRightElement()-pDocon));
       WritableUtils.writeVInt(outputStream, tf);
       pDocon = key.getRightElement();
       termPrev = key.getLeftElement();
@@ -118,7 +118,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
             context.write(term,new BytesWritable(byteStream.toByteArray()));
             byteStream.reset();
             outputStream.flush();
-            pDocon = 0L;
+            pDocon = 0;
         }
     }
   }
@@ -166,7 +166,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     FileInputFormat.setInputPaths(job, new Path(args.input));
     FileOutputFormat.setOutputPath(job, new Path(args.output));
 
-    job.setMapOutputKeyClass(PairOfStringLong.class);
+    job.setMapOutputKeyClass(PairOfStringInt.class);
     job.setMapOutputValueClass(IntWritable.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(BytesWritable.class);
