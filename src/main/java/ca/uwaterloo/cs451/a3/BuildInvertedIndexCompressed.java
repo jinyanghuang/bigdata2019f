@@ -108,7 +108,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       WritableUtils.writeVInt(outputStream, (int)(key.getRightElement()-pDocon));
       WritableUtils.writeVInt(outputStream, tf);
       pDocon = key.getRightElement();
-      termPrev = key.getLeftElement().toString();
+      termPrev = key.getLeftElement();
     }
 
     public void cleanup(Context context) throws IOException, InterruptedException{
