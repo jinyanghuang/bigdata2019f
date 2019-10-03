@@ -63,7 +63,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       for (PairOfObjectInt<String> e : COUNTS) {
         WORDDIDPAIR.set(e.getLeftElement(),(int)docno.get());
         FREQUENCY.set(e.getRightElement());
-        context.write(new PairOfStringInt(e.getLeftElement(),(int)docno.get()), FREQUENCY);
+        context.write(WORDDIDPAIR,(int)docno.get()), FREQUENCY);
       }
     }
   }
@@ -78,7 +78,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
   private static final class MyReducer extends
       Reducer<PairOfStringInt, IntWritable, Text, BytesWritable> {
     // private static final IntWritable TF = new IntWritable();
-    private String termPrev = null;
+    private String termPrev = "";
     private ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();
     private int pDocon = 0;
     private ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -91,7 +91,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       Iterator<IntWritable> iter = values.iterator();
       ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();    
 
-      if(!key.getLeftElement().equals(termPrev) && !termPrev.equals(null)){
+      if(!key.getLeftElement().equals(termPrev) && !termPrev.equals("")){
         
         term.set(termPrev);
         context.write(term,new BytesWritable(byteStream.toByteArray()));
@@ -113,7 +113,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     }
 
     public void cleanup(Context context) throws IOException, InterruptedException{
-        if(termPrev != null){
+        if(!termPrev.equals("")){
             term.set(termPrev);
             context.write(term,new BytesWritable(byteStream.toByteArray()));
             byteStream.reset();
