@@ -63,7 +63,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       for (PairOfObjectInt<String> e : COUNTS) {
         WORDDIDPAIR.set(e.getLeftElement(),(int)docno.get());
         FREQUENCY.set(e.getRightElement());
-        context.write(WORDDIDPAIR,(int)docno.get()), FREQUENCY);
+        context.write(WORDDIDPAIR, FREQUENCY);
       }
     }
   }
