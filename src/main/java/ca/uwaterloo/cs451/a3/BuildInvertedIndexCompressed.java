@@ -97,6 +97,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         context.write(term,new BytesWritable(byteStream.toByteArray()));
         byteStream.reset();
         outputStream.flush();
+        pDocon = 0L;
         // postings.clear();
       }
       int tf = 0;
@@ -117,6 +118,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
             context.write(term,new BytesWritable(byteStream.toByteArray()));
             byteStream.reset();
             outputStream.flush();
+            pDocon = 0L;
         }
     }
   }
