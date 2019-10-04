@@ -144,7 +144,8 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     index[partition].get(key, value);
 
     ArrayListWritable<PairOfInts> posting = new ArrayListWritable<PairOfInts>();
-    
+    int df = value.getLeftElement().get();
+
     byte[] bytes = value.getRightElement().getBytes();
     int tf = 0;
     int docon = 0;
@@ -155,7 +156,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
     
 
-    int df = value.getLeftElement().get();
+    // int df = value.getLeftElement().get();
     for (int i = 0; i <df;i++){
         dGap = WritableUtils.readVInt(inputStream);
         tf = WritableUtils.readVInt(inputStream);
