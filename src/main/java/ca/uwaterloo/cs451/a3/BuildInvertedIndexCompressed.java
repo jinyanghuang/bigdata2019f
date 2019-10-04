@@ -81,31 +81,33 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
     private String termPrev = "";
     private ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();
     private int pDocon = 0;
+    private int df =0;
     private ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     private DataOutputStream outputStream = new DataOutputStream(byteStream);
     private Text term = new Text();
+    IntWritable DF = new IntWritable();
 
     @Override
     public void reduce(PairOfStringInt key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       Iterator<IntWritable> iter = values.iterator();
       ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();    
-
+      
       if(!key.getLeftElement().equals(termPrev) && !termPrev.equals("")){
-        
+        DF.set(df);
         term.set(termPrev);
-        context.write(term,new BytesWritable(byteStream.toByteArray()));
+        context.write(term,new pairOfWritables(DF,new BytesWritable(byteStream.toByteArray())));
         byteStream.reset();
         outputStream.flush();
         pDocon = 0;
-        // postings.clear();
+        df = 0;
       }
       int tf = 0;
       while (iter.hasNext()) {
         tf+=iter.next().get();
       }
 
-    //   postings.add(key.getRightElement().get()-pDocon,TF);
+      df++;
       WritableUtils.writeVInt(outputStream, (key.getRightElement()-pDocon));
       WritableUtils.writeVInt(outputStream, tf);
       pDocon = key.getRightElement();
@@ -114,10 +116,12 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
 
     public void cleanup(Context context) throws IOException, InterruptedException{
         if(!termPrev.equals("")){
+            DF.set(df);
             term.set(termPrev);
-            context.write(term,new BytesWritable(byteStream.toByteArray()));
+            context.write(term,new pairOfWritables(DF,new BytesWritable(byteStream.toByteArray())));
             byteStream.reset();
             outputStream.flush();
+            df = 0;
             pDocon = 0;
         }
     }
