@@ -41,14 +41,23 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
-public class BooleanRetrieval extends Configured implements Tool {
+public class BooleanRetrievalCompressed extends Configured implements Tool {
   private MapFile.Reader index;
   private FSDataInputStream collection;
   private Stack<Set<Integer>> stack;
+  private int numReducer;
 
-  private BooleanRetrieval() {}
+  private BooleanRetrievalCompressed() {}
 
   private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
+    FileStatus[] status = fs.listStatus(new Path(indexPath));
+    numReducer = status.length-1;
+    index = new MapFile.Reader[status.length];
+    for(int i=0; i<status.length; i++) {
+        if (status[i].getPath().toString().contains("part-r-")) {
+            index[i] = new MapFile.Reader(new Path(status[i].getPath().toString()), fs.getConf());
+          }
+    }
     index = new MapFile.Reader(new Path(indexPath + "/part-r-00000"), fs.getConf());
     collection = fs.open(new Path(collectionPath));
     stack = new Stack<>();
@@ -123,13 +132,31 @@ public class BooleanRetrieval extends Configured implements Tool {
 
   private ArrayListWritable<PairOfInts> fetchPostings(String term) throws IOException {
     Text key = new Text();
-    PairOfWritables<IntWritable, ArrayListWritable<PairOfInts>> value =
-        new PairOfWritables<>();
+    ArrayListWritable<PairOfInts> posting = new ArrayListWritable<PairOfInts>();
+    PairOfWritables<IntWritable, BytesWritable> value =
+        new PairOfWritables<IntWritable, BytesWritable>();
+    byte[] bytes = data.getBytes();
+    int tf = 0;
+    int docon = 0;
+    int dGap = 0;
+    ByteArrayInputStream byteArray = new ByteArrayInputStream(bytes);
+    DataInputStream inputStream = new DataInputStream(byteArray);
+
 
     key.set(term);
-    index.get(key, value);
+    // index.get(key, value);
+    int partition = (term.hashCode() & Integer.MAX_VALUE) % numReducers;
+    index[partition].get(key, value);
 
-    return value.getRightElement();
+    int df = value.getLeftElement().get();
+    for (int i = 0; i <df;i++){
+        dGap = WritableUtils.readVint(inputStream);
+        tf = WritableUtils.readVint(inputStream);
+        docon += dGap;
+        posting.add(new PairOfInts(docon,tf));
+    }
+
+    return posting;
   }
 
   public String fetchLine(long offset) throws IOException {
@@ -191,6 +218,6 @@ public class BooleanRetrieval extends Configured implements Tool {
    * @throws Exception if tool encounters an exception
    */
   public static void main(String[] args) throws Exception {
-    ToolRunner.run(new BooleanRetrieval(), args);
+    ToolRunner.run(new BooleanRetrievalCompressed(), args);
   }
 }
