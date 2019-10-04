@@ -63,7 +63,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
             index[i] = new MapFile.Reader(new Path(status[i].getPath().toString()), fs.getConf());
           }
     }
-    index = new MapFile.Reader(new Path(indexPath + "/part-r-00000"), fs.getConf());
     collection = fs.open(new Path(collectionPath));
     stack = new Stack<>();
   }
@@ -140,7 +139,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     ArrayListWritable<PairOfInts> posting = new ArrayListWritable<PairOfInts>();
     PairOfWritables<IntWritable, BytesWritable> value =
         new PairOfWritables<IntWritable, BytesWritable>();
-    byte[] bytes = data.getBytes();
+    byte[] bytes = value.getRightElement().getBytes();
     int tf = 0;
     int docon = 0;
     int dGap = 0;
@@ -149,8 +148,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
 
     key.set(term);
-    // index.get(key, value);
-    int partition = (term.hashCode() & Integer.MAX_VALUE) % numReducers;
+    int partition = (term.hashCode() & Integer.MAX_VALUE) % numReducer;
     index[partition].get(key, value);
 
     int df = value.getLeftElement().get();
