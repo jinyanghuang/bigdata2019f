@@ -76,7 +76,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
   }
 
   private static final class MyReducer extends
-      Reducer<PairOfStringInt, IntWritable, Text, BytesWritable> {
+      Reducer<PairOfStringInt, IntWritable, Text, PairOfWritables> {
     // private static final IntWritable TF = new IntWritable();
     private String termPrev = "";
     private ArrayListWritable<PairOfInts> postings = new ArrayListWritable<PairOfInts>();
