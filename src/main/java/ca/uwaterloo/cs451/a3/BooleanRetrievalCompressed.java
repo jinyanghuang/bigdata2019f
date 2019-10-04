@@ -45,6 +45,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import org.apache.hadoop.io.WritableUtils;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
   private MapFile.Reader[] index;
