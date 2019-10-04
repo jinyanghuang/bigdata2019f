@@ -44,7 +44,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 import java.io.ByteArrayInputStream;
-import org.apache.hadoop.io.WritableUtils;
 import java.io.DataInputStream;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
@@ -154,8 +153,8 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
     int df = value.getLeftElement().get();
     for (int i = 0; i <df;i++){
-        dGap = WritableUtils.readVint(inputStream);
-        tf = WritableUtils.readVint(inputStream);
+        dGap = WritableUtils.readVInt(inputStream);
+        tf = WritableUtils.readVInt(inputStream);
         docon += dGap;
         posting.add(new PairOfInts(docon,tf));
     }
