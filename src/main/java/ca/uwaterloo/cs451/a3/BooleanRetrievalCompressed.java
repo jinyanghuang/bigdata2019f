@@ -52,7 +52,6 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
   private FSDataInputStream collection;
   private Stack<Set<Integer>> stack;
   private int numReducer;
-
   private BooleanRetrievalCompressed() {}
 
   private void initialize(String indexPath, String collectionPath, FileSystem fs) throws IOException {
@@ -61,7 +60,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     index = new MapFile.Reader[status.length];
     for(int i=0; i<status.length; i++) {
         if (status[i].getPath().toString().contains("part-r-")) {
-            index[i] = new MapFile.Reader(new Path(status[i].getPath().toString()), fs.getConf());
+            index[i] = new MapFile.Reader(status[i].getPath(), fs.getConf());
           }
     }
     collection = fs.open(new Path(collectionPath));
@@ -141,7 +140,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
         new PairOfWritables<IntWritable, BytesWritable>();
     key.set(term);
     int partition = (term.hashCode() & Integer.MAX_VALUE) % numReducer;
-    index[partition].get(key, value);
+    index[partition+1].get(key, value);
 
     return deCompress(value);
   }
