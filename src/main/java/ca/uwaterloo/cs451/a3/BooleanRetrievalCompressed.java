@@ -33,6 +33,9 @@ import org.kohsuke.args4j.ParserProperties;
 import tl.lin.data.array.ArrayListWritable;
 import tl.lin.data.pair.PairOfInts;
 import tl.lin.data.pair.PairOfWritables;
+import org.apache.hadoop.fs.FileStatus;
+
+import org.apache.hadoop.io.BytesWritable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,9 +43,11 @@ import java.io.InputStreamReader;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
-  private MapFile.Reader index;
+  private MapFile.Reader[] index;
   private FSDataInputStream collection;
   private Stack<Set<Integer>> stack;
   private int numReducer;
