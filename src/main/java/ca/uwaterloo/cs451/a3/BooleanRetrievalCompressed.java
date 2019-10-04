@@ -137,6 +137,10 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
 
   private ArrayListWritable<PairOfInts> fetchPostings(String term) throws IOException {
     Text key = new Text();
+    key.set(term);
+    int partition = (term.hashCode() & Integer.MAX_VALUE) % numReducer;
+    index[partition].get(key, value);
+    
     ArrayListWritable<PairOfInts> posting = new ArrayListWritable<PairOfInts>();
     PairOfWritables<IntWritable, BytesWritable> value =
         new PairOfWritables<IntWritable, BytesWritable>();
@@ -148,9 +152,7 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     DataInputStream inputStream = new DataInputStream(byteArray);
 
 
-    key.set(term);
-    int partition = (term.hashCode() & Integer.MAX_VALUE) % numReducer;
-    index[partition].get(key, value);
+    
 
     int df = value.getLeftElement().get();
     for (int i = 0; i <df;i++){
