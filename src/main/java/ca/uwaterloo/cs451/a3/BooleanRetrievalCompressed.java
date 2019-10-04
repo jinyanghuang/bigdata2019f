@@ -143,27 +143,26 @@ public class BooleanRetrievalCompressed extends Configured implements Tool {
     int partition = (term.hashCode() & Integer.MAX_VALUE) % numReducer;
     index[partition].get(key, value);
 
+    return deCompress(value);
+  }
+
+  private ArrayListWritable<PairOfInts> deCompress(PairOfWritables<IntWritable, BytesWritable> value) throws IOException{
     ArrayListWritable<PairOfInts> posting = new ArrayListWritable<PairOfInts>();
+    byte[] bytes = value.getRightElement().getBytes();
+    ByteArrayInputStream byteArray = new ByteArrayInputStream(bytes);
+    DataInputStream inputStream = new DataInputStream(byteArray);
     int df = value.getLeftElement().get();
 
-    byte[] bytes = value.getRightElement().getBytes();
     int tf = 0;
     int docon = 0;
     int dGap = 0;
-    ByteArrayInputStream byteArray = new ByteArrayInputStream(bytes);
-    DataInputStream inputStream = new DataInputStream(byteArray);
 
-
-    
-
-    // int df = value.getLeftElement().get();
     for (int i = 0; i <df;i++){
         dGap = WritableUtils.readVInt(inputStream);
         tf = WritableUtils.readVInt(inputStream);
         docon += dGap;
         posting.add(new PairOfInts(docon,tf));
     }
-
     return posting;
   }
 
