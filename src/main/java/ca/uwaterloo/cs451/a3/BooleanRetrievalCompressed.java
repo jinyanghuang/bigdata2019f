@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 import java.io.ByteArrayInputStream;
+import org.apache.hadoop.io.WritableUtils;
 import java.io.DataInputStream;
 
 public class BooleanRetrievalCompressed extends Configured implements Tool {
