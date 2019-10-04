@@ -96,7 +96,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
       if(!key.getLeftElement().equals(termPrev) && !termPrev.equals("")){
         DF.set(df);
         term.set(termPrev);
-        context.write(term,new pairOfWritables(DF,new BytesWritable(byteStream.toByteArray())));
+        context.write(term,new PairOfWritables(DF,new BytesWritable(byteStream.toByteArray())));
         byteStream.reset();
         outputStream.flush();
         pDocon = 0;
@@ -118,7 +118,7 @@ public class BuildInvertedIndexCompressed extends Configured implements Tool {
         if(!termPrev.equals("")){
             DF.set(df);
             term.set(termPrev);
-            context.write(term,new pairOfWritables(DF,new BytesWritable(byteStream.toByteArray())));
+            context.write(term,new PairOfWritables(DF,new BytesWritable(byteStream.toByteArray())));
             byteStream.reset();
             outputStream.flush();
             df = 0;
