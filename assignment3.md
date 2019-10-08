@@ -7,7 +7,11 @@
 5.8M	cs451-bigdatateach-a3-index-shakespeare</p>
 
 <h1>Q2</h1>
-1.1 G
+0        0        cs451-bigdatateach-a3-index-wiki/_SUCCESS
+256.2 M  768.7 M  cs451-bigdatateach-a3-index-wiki/part-r-00000
+315.5 M  946.5 M  cs451-bigdatateach-a3-index-wiki/part-r-00001
+265.1 M  795.2 M  cs451-bigdatateach-a3-index-wiki/part-r-00002
+314.0 M  941.9 M  cs451-bigdatateach-a3-index-wiki/part-r-00003
 <h1>Q3</h1>
 279261623	Waterloo Maple.0003	Corporate history Waterloo Maple Inc. was first incorporated...
 514403440	David Cheriton.0011	He spent three years as an Assistant Professor at his alma m...
