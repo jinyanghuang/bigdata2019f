@@ -1,6 +1,10 @@
 <h1>Jinyang Huang 20812495</h1>
 <h1>Q1</h1>
-<p>5.8m</p>
+<p>1.4M	cs451-bigdatateach-a3-index-shakespeare/part-r-00000
+1.5M	cs451-bigdatateach-a3-index-shakespeare/part-r-00001
+1.4M	cs451-bigdatateach-a3-index-shakespeare/part-r-00002
+1.6M	cs451-bigdatateach-a3-index-shakespeare/part-r-00003
+5.8M	cs451-bigdatateach-a3-index-shakespeare</p>
 
 <h1>Q2</h1>
 1.1 G
