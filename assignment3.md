@@ -7,7 +7,6 @@
 5.8M	cs451-bigdatateach-a3-index-shakespeare</p>
 
 <h1>Q2</h1>
-0        0        cs451-bigdatateach-a3-index-wiki/_SUCCESS
 256.2 M  768.7 M  cs451-bigdatateach-a3-index-wiki/part-r-00000
 315.5 M  946.5 M  cs451-bigdatateach-a3-index-wiki/part-r-00001
 265.1 M  795.2 M  cs451-bigdatateach-a3-index-wiki/part-r-00002
