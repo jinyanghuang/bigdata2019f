@@ -39,7 +39,7 @@ public class PageRankNode implements Writable {
 
   public PageRankNode() {}
 
-  public float getPageRank() {
+  public ArrayListOfFloatsWritable getPageRank() {
     return pagerank;
   }
 

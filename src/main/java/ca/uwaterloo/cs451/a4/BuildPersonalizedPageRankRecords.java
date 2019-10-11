@@ -38,13 +38,12 @@ public class BuildPersonalizedPageRankRecords extends Configured implements Tool
   private static class MyMapper extends Mapper<LongWritable, Text, IntWritable, PageRankNode> {
     private static final IntWritable nid = new IntWritable();
     private static final PageRankNode node = new PageRankNode();
-    private static final String[] sourcesList;
+    private static String[] sourcesList;
 
     @Override
     public void setup(Mapper<LongWritable, Text, IntWritable, PageRankNode>.Context context) {
       int n = context.getConfiguration().getInt(NODE_CNT_FIELD, 0);
-      String source = context.getConfiguration().get(NODE_SOURCE);
-      sourcesList = sources.trim().split(",");
+      sourcesList = context.getConfiguration().getStrings(NODE_SOURCE,"");
       if (n == 0) {
         throw new RuntimeException(NODE_CNT_FIELD + " cannot be 0!");
       }
