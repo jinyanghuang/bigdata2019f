@@ -299,7 +299,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
           p.set(i,link);
         }
       }
-
+      node.setPageRank(p);
       context.write(nid, node);
     }
 
