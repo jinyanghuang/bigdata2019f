@@ -2,6 +2,7 @@ package ca.uwaterloo.cs451.a4;
 
 import org.apache.hadoop.io.Writable;
 import tl.lin.data.array.ArrayListOfIntsWritable;
+import tl.lin.data.array.ArrayListOfFloatsWritable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

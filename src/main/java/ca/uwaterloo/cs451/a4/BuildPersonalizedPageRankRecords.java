@@ -27,6 +27,7 @@ import tl.lin.data.array.ArrayListOfIntsWritable;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.ArrayList;
 
 
 public class BuildPersonalizedPageRankRecords extends Configured implements Tool {
