@@ -302,6 +302,12 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
       context.write(nid, node);
     }
+
+    @Override
+    public void cleanup(Context context) throws IOException {
+      sources.clear();
+      missingMass.clear();
+    }
   }
 
   // Random jump factor.
@@ -510,6 +516,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     LOG.info("PageRank: iteration " + j + ": Phase2");
     LOG.info(" - input: " + in);
     LOG.info(" - output: " + out);
+    LOG.info(" - sources: " + sources);
 
     job.getConfiguration().setBoolean("mapred.map.tasks.speculative.execution", false);
     job.getConfiguration().setBoolean("mapred.reduce.tasks.speculative.execution", false);
