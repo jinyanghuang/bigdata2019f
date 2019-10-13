@@ -109,10 +109,10 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
       IntWritable key = new IntWritable();
-      Text value = new Text();
+      FloatWritable value = new FloatWritable();
 
       for(int i = 0; i < queue.size(); i++){
-        context.write(new Text("Source:"),new Text(src.get(i)));
+        context.write(new Text("Source:"),new Text(String.valueOf(src.get(i))));
         for(PairOfObjectFloat<Integer> pair : queue.get(i).extractAll()){
           key.set(pair.getLeftElement());
           value.set((float)StrictMath.exp(pair.getRightElement()));
