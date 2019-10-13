@@ -251,8 +251,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
       // Write to a file the amount of PageRank mass we've seen in this reducer.
       FileSystem fs = FileSystem.get(context.getConfiguration());
       FSDataOutputStream out = fs.create(new Path(path + "/" + taskId), false);
-      for (int i = 0; i < totalMass.size(); i++) {
-        out.writeFloat(totalMass.get(i));
+      for (int i = 0; i < totalMass.length; i++) {
+        out.writeFloat(totalMass[i]);
       }
       out.close();
     }
@@ -298,14 +298,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
           p.set(i,link);
         }
       }
-      float p = node.getPageRank();
-      
-      float jump = (float) (Math.log(ALPHA) - Math.log(nodeCnt));
-      float link = (float) Math.log(1.0f - ALPHA)
-          + sumLogProbs(p, (float) (Math.log(missingMass) - Math.log(nodeCnt)));
-
-      p = sumLogProbs(jump, link);
-      node.setPageRank(p);
 
       context.write(nid, node);
     }
