@@ -63,7 +63,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     private static String[] sourcesList;
 
     @Override
-    public void setup(Mapper<LongWritable, Text, IntWritable, PageRankNode>.Context context) throws IOException {
+    public void setup(Mapper<IntWritable, PageRankNode, IntWritable, PageRankNode>.Context context) throws IOException {
       sourcesList = context.getConfiguration().getStrings(NODE_SOURCE,"");
     }
 
@@ -95,7 +95,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
           neighbor.set(list.get(i));
           intermediateMass.setNodeId(list.get(i));
           intermediateMass.setType(PageRankNode.Type.Mass);
-          intermediateMass.setPageRank(mass);
+          intermediateMass.setPageRank(new ArrayListOfFloatsWritable(mass));
 
           // Emit messages with PageRank mass to neighbors.
           context.write(neighbor, intermediateMass);
@@ -148,7 +148,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
       if (massMessages > 0) {
         intermediateMass.setNodeId(nid.get());
         intermediateMass.setType(PageRankNode.Type.Mass);
-        intermediateMass.setPageRank(mass);
+        intermediateMass.setPageRank(new ArrayListOfFloatsWritable(mass));
 
         context.write(nid, intermediateMass);
       }
@@ -204,12 +204,12 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
           for (int i =0; i< mass.length; i++){
             mass[i] = sumLogProbs(mass[i], n.getPageRank().get(i));
           }
-          massMessages++;
+          massMessagesReceived++;
         }
       }
 
       // Update the final accumulated PageRank mass.
-      node.setPageRank(mass);
+      node.setPageRank(new ArrayListOfFloatsWritable(mass));
       context.getCounter(PageRank.massMessagesReceived).increment(massMessagesReceived);
 
       // Error checking.
@@ -251,7 +251,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
       // Write to a file the amount of PageRank mass we've seen in this reducer.
       FileSystem fs = FileSystem.get(context.getConfiguration());
       FSDataOutputStream out = fs.create(new Path(path + "/" + taskId), false);
-      out.writeFloat(totalMass);
+      for (int i = 0; i < totalMass.size(); i++) {
+        out.writeFloat(totalMass.get(i));
+      }
       out.close();
     }
   }

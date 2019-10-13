@@ -86,13 +86,13 @@ public class PageRankNode implements Writable {
 
     if (type.equals(Type.Mass)) {
       pagerank = new ArrayListOfFloatsWritable();
-      pagerank = readFields(in);
+      pagerank.readFields(in);
       return;
     }
 
     if (type.equals(Type.Complete)) {
       pagerank = new ArrayListOfFloatsWritable();
-      pagerank = readFields(in);
+      pagerank.readFields(in);
     }
 
     adjacencyList = new ArrayListOfIntsWritable();
