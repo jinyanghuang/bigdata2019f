@@ -59,8 +59,7 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
     public void map(IntWritable nid, PageRankNode node, Context context) throws IOException,
         InterruptedException {
       for(int i = 0; i < queue.size(); i++){
-        TopScoredObjects<Integer> q = queue.get(i).add(node.getNodeId(), node.getPageRank().get(i));
-        queue.set(i,q);
+        queue.get(i).add(node.getNodeId(), node.getPageRank().get(i));
       }
     }
 
