@@ -374,7 +374,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     int e = Integer.parseInt(cmdline.getOptionValue(END));
     boolean useCombiner = cmdline.hasOption(COMBINER);
     boolean useRange = cmdline.hasOption(RANGE);
-    Srtring sources = cmdline.getOptionValue(SOURCES);
+    String sources = cmdline.getOptionValue(SOURCES);
 
     LOG.info("Tool name: RunPersonalizedPageRankBasic");
     LOG.info(" - base path: " + basePath);
@@ -475,14 +475,14 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
     ArrayList<Float> mass = new ArrayList<Float>();
-    for(int i = 0; i< sources.split(",").length; i++){
+    for(int j = 0; j< sources.split(",").length; j++){
       mass.add(Float.NEGATIVE_INFINITY);
     }
     FileSystem fs = FileSystem.get(getConf());
     for (FileStatus f : fs.listStatus(new Path(outm))) {
       FSDataInputStream fin = fs.open(f.getPath());
-      for(int i = 0;i < mass.length; i++){
-        mass.set(i,sumLogProbs(mass, fin.readFloat()));
+      for(int j = 0;j < mass.length; j++){
+        mass.set(j,sumLogProbs(mass, fin.readFloat()));
       }
       fin.close();
     }
