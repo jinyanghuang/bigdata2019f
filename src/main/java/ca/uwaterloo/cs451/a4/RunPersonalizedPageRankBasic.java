@@ -41,7 +41,7 @@ import java.util.Iterator;
 public class RunPersonalizedPageRankBasic extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(RunPersonalizedPageRankBasic.class);
 
-  private static final String NODE_SOURCE;
+  private static final String NODE_SOURCE = "nodeSource";
 
   private static enum PageRank {
     nodes, edges, massMessages, massMessagesSaved, massMessagesReceived, missingStructure
