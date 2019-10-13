@@ -289,7 +289,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
         ArrayListOfFloatsWritable p = node.getPageRank();
       for(int i = 0; i< sources.size(); i++) {
-        if(Integer.parseInt(sources.get(i)) == nid.get()){
+        if(Integer.valueOf(sources.get(i)) == nid.get()){
           float link = (float) Math.log(1.0f - ALPHA) + sumLogProbs(p.get(i), (float) Math.log(missingMass.get(i)));
           float jump = (float) Math.log(ALPHA);
           p.set(i,sumLogProbs(link, jump));
@@ -325,7 +325,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
   private static final String END = "end";
   private static final String COMBINER = "useCombiner";
   private static final String RANGE = "range";
-  private static final String SOURjlCES ="sources";
+  private static final String SOURCES ="sources";
 
   /**
    * Runs this tool.
