@@ -395,7 +395,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
   // Run each iteration.
   private void iteratePageRank(int i, int j, String basePath, int numNodes,
-      boolean useCombiner) throws Exception {
+      boolean useCombiner, String sources) throws Exception {
     // Each iteration consists of two phases (two MapReduce jobs).
 
     // Job 1: distribute PageRank mass along outgoing edges.
@@ -403,8 +403,8 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
     // Find out how much PageRank mass got lost at the dangling nodes.
     ArrayList<Float> missing;
-    for (int i = 0; i <mass.size(); i++){
-      missing.add(1.0f - (float) StrictMath.exp(mass.get(i)));
+    for (int k = 0; k <mass.size(); i++){
+      missing.add(1.0f - (float) StrictMath.exp(mass.get(k)));
     }
 
     // Job 2: distribute missing mass, take care of random jump factor.
@@ -475,14 +475,14 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
     ArrayList<Float> mass = new ArrayList<Float>();
-    for(int j = 0; j< sources.split(",").length; j++){
+    for(int k = 0; k< sources.split(",").length; k++){
       mass.add(Float.NEGATIVE_INFINITY);
     }
     FileSystem fs = FileSystem.get(getConf());
     for (FileStatus f : fs.listStatus(new Path(outm))) {
       FSDataInputStream fin = fs.open(f.getPath());
-      for(int j = 0;j < mass.length; j++){
-        mass.set(j,sumLogProbs(mass, fin.readFloat()));
+      for(int k = 0;k < mass.length; k++){
+        mass.set(k,sumLogProbs(mass, fin.readFloat()));
       }
       fin.close();
     }
@@ -495,9 +495,9 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     job.setJobName("PageRank:Basic:iteration" + j + ":Phase2");
     job.setJarByClass(RunPersonalizedPageRankBasic.class);
     String missingStr = "";
-    for (int i = 0; i < missing.size(); i++) {
-      missingStr += String.valueOf(missing.get(i));
-      if (i < missing.size() - 1) {
+    for (int k = 0; k < missing.size(); k++) {
+      missingStr += String.valueOf(missing.get(k));
+      if (k < missing.size() - 1) {
         missingStr += ",";
       }
     }
