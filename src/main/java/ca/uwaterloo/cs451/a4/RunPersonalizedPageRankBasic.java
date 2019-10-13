@@ -166,6 +166,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     @Override
     public void setup(Context context){
       sourcesList = context.getConfiguration().getStrings(NODE_SOURCE,"");
+      totalMass = new float[sourcesList.length];
       for (int i = 0; i < sourcesList.length; i++){
         totalMass[i] = Float.NEGATIVE_INFINITY;
       }
@@ -373,7 +374,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     int s = Integer.parseInt(cmdline.getOptionValue(START));
     int e = Integer.parseInt(cmdline.getOptionValue(END));
     boolean useCombiner = cmdline.hasOption(COMBINER);
-    boolean useRange = cmdline.hasOption(RANGE);
     String sources = cmdline.getOptionValue(SOURCES);
 
     LOG.info("Tool name: RunPersonalizedPageRankBasic");
@@ -382,7 +382,6 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     LOG.info(" - start iteration: " + s);
     LOG.info(" - end iteration: " + e);
     LOG.info(" - use combiner: " + useCombiner);
-    LOG.info(" - user range partitioner: " + useRange);
     LOG.info(" - sources: " + sources);
 
     // Iterate PageRank.
