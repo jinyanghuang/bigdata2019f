@@ -12,7 +12,7 @@ mark: 5.0/5
 
 **Test 2**
 Compressed index size for Shakespeare collection
-mark: 0.0/5
+mark: 5.0/5
 
 **Test 3**
 Query 1 (Linux)
@@ -32,7 +32,7 @@ mark: 5.0/5
 
 **Test 7**
 Compressed index size for the sample Wikipedia collection
-mark: 0.0/5
+mark: 5.0/5
 
 **Test 8**
 Query 1 (Datasci)
@@ -50,9 +50,9 @@ mark: 5.0/5
 
 **Extra debugging needed :** None
 
-**Feedback :** None
+**Feedback :** Regraded Test 2 and Test 7 due to student including document frequency which lead to larger index sizes.
 
 **Final grade**
-mark: 40.0/50.0
+mark: 50.0/50.0
 
-summary: 20812495,Jinyang Huang,Jinyanghuang,40.0/50.0
+summary: 20812495,Jinyang Huang,Jinyanghuang,50.0/50.0
