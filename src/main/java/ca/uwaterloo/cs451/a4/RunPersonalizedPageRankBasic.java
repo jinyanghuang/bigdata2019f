@@ -439,6 +439,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     LOG.info(" - output: " + out);
     LOG.info(" - nodeCnt: " + numNodes);
     LOG.info(" - useCombiner: " + useCombiner);
+    LOG.info(" - sources: " + sources);
     LOG.info("computed number of partitions: " + numPartitions);
 
     int numReduceTasks = numPartitions;
@@ -480,13 +481,14 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
     ArrayList<Float> mass = new ArrayList<Float>();
-    for(int k = 0; k< sources.split(",").length; k++){
+    String [] srcs = sources.split(",");
+    for(int k = 0; k< srcs.length; k++){
       mass.add(Float.NEGATIVE_INFINITY);
     }
     FileSystem fs = FileSystem.get(getConf());
     for (FileStatus f : fs.listStatus(new Path(outm))) {
       FSDataInputStream fin = fs.open(f.getPath());
-      for(int k = 0;k < mass.size(); k++){
+      for(int k = 0;k < srcs.length; k++){
         mass.set(k,sumLogProbs(mass.get(k), fin.readFloat()));
       }
       fin.close();
