@@ -408,7 +408,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
 
     // Find out how much PageRank mass got lost at the dangling nodes.
     ArrayList<Float> missing = new ArrayList<Float>();
-    for (int k = 0; k <mass.size(); i++){
+    for (int k = 0; k <mass.size(); k++){
       missing.add(1.0f - (float) StrictMath.exp(mass.get(k)));
     }
 
@@ -481,21 +481,18 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
     System.out.println("Job Finished in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
     ArrayList<Float> mass = new ArrayList<Float>();
-    String [] srcs = sources.split(",");
-    for(int k = 0; k< srcs.length; k++){
+    for(int k = 0; k< sources.split(",").length; k++){
       mass.add(Float.NEGATIVE_INFINITY);
     }
-    System.out.println("mass size" + mass.size());
     FileSystem fs = FileSystem.get(getConf());
     for (FileStatus f : fs.listStatus(new Path(outm))) {
       FSDataInputStream fin = fs.open(f.getPath());
-      for(int k = 0;k < srcs.length; k++){
+      for(int k = 0;k < mass.size(); k++){
         mass.set(k,sumLogProbs(mass.get(k), fin.readFloat()));
       }
       fin.close();
     }
 
-    System.out.println("phase1 Finished!!!!!!!");
     return mass;
   }
 
