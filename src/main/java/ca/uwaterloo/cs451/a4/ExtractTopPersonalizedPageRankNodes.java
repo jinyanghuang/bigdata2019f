@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class ExtractTopPersonalizedPageRankNodes extends Configured implements Tool {
   private static final Logger LOG = Logger.getLogger(ExtractTopPersonalizedPageRankNodes.class);
