@@ -209,6 +209,20 @@ public class ExtractTopPersonalizedPageRankNodes extends Configured implements T
 
     job.waitForCompletion(true);
 
+    Path path = new Path(outputPath + "/part-r-00000");
+    FileSystem fs = FileSystem.get(conf);
+    BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(path)));
+    try {
+      String line;
+      line = br.readLine();
+      while (line != null){
+        System.out.println(line);
+        line = br.readLine();
+      }
+    } finally {
+      br.close();
+    }
+
     return 0;
   }
 
