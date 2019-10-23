@@ -494,6 +494,7 @@ public class RunPersonalizedPageRankBasic extends Configured implements Tool {
       fin.close();
     }
 
+    System.out.println("phase1 Finished!!!!!!!");
     return mass;
   }
 
