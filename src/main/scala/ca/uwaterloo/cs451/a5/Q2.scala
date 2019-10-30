@@ -19,7 +19,7 @@ object Q2 extends Tokenizer {
     log.info("Input: " + args.input())
     log.info("date: " + args.date())
 
-    val conf = new SparkConf().setAppName("Q1")
+    val conf = new SparkConf().setAppName("Q2")
     val sc = new SparkContext(conf)
 
     val date = args.date()
@@ -33,7 +33,7 @@ object Q2 extends Tokenizer {
       val result = textFile
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
       .filter(_._2.contains(date))
-      .cogroup(orderFile)
+      .cogroup(order)
       
 
       println("ANSWER=" + result)
