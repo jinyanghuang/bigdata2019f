@@ -46,27 +46,17 @@ object Q4 extends Tokenizer {
                         val customerKey = line._2
                         val customerTable = customerBroadcast.value
                         (orderKey,(customerTable(customerKey)))
-                    }).sortByKey()
-                    .take(20)
-                    .foreach(println) 
+                    })
       
       
-    //   val textFile = sc.textFile(args.input() + "/lineitem.tbl")
-    //   val result = textFile
-    //   .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1).toInt,line.split("\\|")(2).toInt,line.split("\\|")(10)))
-    //   .filter(_._4.contains(date))
-    //   .map(line =>{
-    //       val orderKey = line._1
-    //       val partKey = line._2
-    //       val suppKey = line._3
-    //       val partTable = partBroadcast.value
-    //       val suppTable = suppilerBroadcast.value
-    //       (orderKey,(partTable(partKey),suppTable(suppKey)))
-    //   })
-    //   .sortByKey()
-    //   .take(20)
-    //   .map(line => (line._1,line._2._1,line._2._2))
-    //   .foreach(println) 
+      val lineFile = sc.textFile(args.input() + "/lineitem.tbl")
+      val result = lineFile
+      .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
+      .filter(_._2.contains(date))
+      .cogroup(orders)
+      .sortByKey()
+      .take(20)
+      .foreach(println) 
 
     } else if (args.parquet()) {
       val sparkSession = SparkSession.builder.getOrCreate
