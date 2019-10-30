@@ -56,7 +56,7 @@ object Q4 extends Tokenizer {
       .cogroup(orders)
       .filter(_._2._1.size != 0)
       .sortByKey()
-      .map(_._1,_._2._2.head)
+      .map(line =>(line_._1, line_._2._2.head))
       .take(20)
       .foreach(println) 
 
