@@ -54,7 +54,9 @@ object Q4 extends Tokenizer {
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
       .filter(_._2.contains(date))
       .cogroup(orders)
+      .filter(_._2._1.size != 0)
       .sortByKey()
+      .map(_._1,_._2._2.head)
       .take(20)
       .foreach(println) 
 
