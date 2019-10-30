@@ -36,7 +36,7 @@ object Q3 extends Tokenizer {
       val textFile = sc.textFile(args.input() + "/lineitem.tbl")
       val result = textFile
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1).toInt,line.split("\\|")(2).toInt,line.split("\\|")(10)))
-      .filter(_._2.contains(date))
+      .filter(_._4.contains(date))
       .map(line =>{
           val orderKey = line._1
           val partKey = line._2
