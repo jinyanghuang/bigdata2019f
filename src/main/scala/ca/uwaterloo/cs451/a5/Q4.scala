@@ -55,9 +55,14 @@ object Q4 extends Tokenizer {
       .filter(_._2.contains(date))
       .cogroup(orders)
       .filter(_._2._1.size != 0)
+      .flatMap(line=>{
+          line._2._2.head.toList
+      }).map(pair => (pair,1))
+      .reduceByKey(_ + _)
+      .map(p => (p._1._1,(p._1._2,p._2)))
       .sortByKey()
-      .map(line =>(line._1, line._2._2.head))
       .take(20)
+      .map(p => ((p._1,p._2._1),p._2._2))
       .foreach(println) 
 
     } else if (args.parquet()) {
