@@ -51,7 +51,7 @@ object Q2 extends Tokenizer {
       val lineitemDF = sparkSession.read.parquet(args.input() + "/lineitem")
       val lineitemRDD = lineitemDF.rdd
   	  val result = lineitemRDD
-  			.map(line => (line.getInt(0).toInt,line.getString(10)))
+  			.map(line => (line.getInt(0),line.getString(10)))
   			.filter(_._2.contains(date))
             .cogroup(order)
             .filter(_._2._1.size != 0)

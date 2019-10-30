@@ -52,24 +52,35 @@ object Q3 extends Tokenizer {
 
     } else if (args.parquet()) {
       val sparkSession = SparkSession.builder.getOrCreate
-      val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
-      val ordersRDD = ordersDF.rdd
-  	  val order = ordersRDD
-  			.map(line => (line.getInt(0),line.getString(6)))
+      val partDF = sparkSession.read.parquet(args.input() + "/part")
+      val partRDD = partDF.rdd
+  	  val part = partRDD
+  			.map(line => (line.getInt(0),line.getString(1)))
+      val partBroadcast = sc.broadcast(part.collectAsMap)
   			
+      val suppDF = sparkSession.read.parquet(args.input() + "/supplier")
+      val suppRDD = suppDF.rdd
+  	  val supp = suppRDD
+  			.map(line => (line.getInt(0),line.getString(1)))
+      val suppBroadcast = sc.broadcast(supp.collectAsMap)
 
       val lineitemDF = sparkSession.read.parquet(args.input() + "/lineitem")
       val lineitemRDD = lineitemDF.rdd
   	  val result = lineitemRDD
-  			.map(line => (line.getInt(0).toInt,line.getString(10)))
-  			.filter(_._2.contains(date))
-            .cogroup(order)
-            .filter(_._2._1.size != 0)
+  			.map(line => (line.getInt(0),line.getInt(1),line.getInt(2),line.getString(10)))
+  			.filter(_._4.contains(date))
+            .map(line =>{
+                val orderKey = line._1
+                val partKey = line._2
+                val suppKey = line._3
+                val partTable = partBroadcast.value
+                val suppTable = suppilerBroadcast.value
+                (orderKey,(partTable(partKey),suppTable(suppKey)))
+            })
             .sortByKey()
             .take(20)
-            .map(line => (line._2._2.head,line._1))
+            .map(line => (line._1,line._2._1,line._2._2))
             .foreach(println) 
-
     }
 	}
 }
