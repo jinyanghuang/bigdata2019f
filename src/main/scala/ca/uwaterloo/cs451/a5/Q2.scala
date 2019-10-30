@@ -34,9 +34,12 @@ object Q2 extends Tokenizer {
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
       .filter(_._2.contains(date))
       .cogroup(order)
-      
+      .filter(_._2._1.size != 0)
+      .sortByKey()
+      .take(20)
+      .map(line => (line._2._2.head,line._1))
+      .foreach(println) 
 
-      println("ANSWER=" + result)
     } else if (args.parquet()) {
       val sparkSession = SparkSession.builder.getOrCreate
       val lineitemDF = sparkSession.read.parquet(args.input() + "/lineitem")
