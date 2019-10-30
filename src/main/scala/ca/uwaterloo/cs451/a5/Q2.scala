@@ -42,14 +42,24 @@ object Q2 extends Tokenizer {
 
     } else if (args.parquet()) {
       val sparkSession = SparkSession.builder.getOrCreate
+      val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
+      val ordersRDD = ordersDF.rdd
+  	  val order = ordersRDD
+  			.map(line => (line.getString(0).toInt,line.getString(6))))
+  			
+
       val lineitemDF = sparkSession.read.parquet(args.input() + "/lineitem")
       val lineitemRDD = lineitemDF.rdd
-  		val count = lineitemRDD
-  			.map(line => line.getString(10))
-  			.filter(_.contains(date))
-  			.count
+  	  val result = lineitemRDD
+  			.map(line => (line.getString(0).toInt,line.getString(10)))
+  			.filter(_._2.contains(date))
+            .cogroup(order)
+            .filter(_._2._1.size != 0)
+            .sortByKey()
+            .take(20)
+            .map(line => (line._2._2.head,line._1))
+            .foreach(println) 
 
-  		println("ANSWER=" + count)
     }
 	}
 }
