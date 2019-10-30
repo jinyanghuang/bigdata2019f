@@ -30,6 +30,8 @@ object Q1 extends Tokenizer {
     val conf = new SparkConf().setAppName("Q1")
     val sc = new SparkContext(conf)
 
+    val date = args.date()
+
     if (args.text()) {
       val textFile = sc.textFile(args.input() + "/lineitem.tbl")
       val count = textFile
