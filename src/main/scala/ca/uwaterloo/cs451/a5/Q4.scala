@@ -10,7 +10,7 @@ import org.rogach.scallop._
 import org.apache.spark.sql.SparkSession
 
 
-object Q3 extends Tokenizer {
+object Q4 extends Tokenizer {
   val log = Logger.getLogger(getClass().getName())
 
   def main(argv: Array[String]) {
@@ -19,7 +19,7 @@ object Q3 extends Tokenizer {
     log.info("Input: " + args.input())
     log.info("date: " + args.date())
 
-    val conf = new SparkConf().setAppName("Q3")
+    val conf = new SparkConf().setAppName("Q4")
     val sc = new SparkContext(conf)
 
     val date = args.date()
