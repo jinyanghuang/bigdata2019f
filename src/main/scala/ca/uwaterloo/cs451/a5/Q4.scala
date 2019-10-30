@@ -70,35 +70,52 @@ object Q4 extends Tokenizer {
 
     } else if (args.parquet()) {
       val sparkSession = SparkSession.builder.getOrCreate
-      val partDF = sparkSession.read.parquet(args.input() + "/part")
-      val partRDD = partDF.rdd
-  	  val part = partRDD
+      val nationDF = sparkSession.read.parquet(args.input() + "/nation")
+      val nationRDD = nationDF.rdd
+  	  val nation = nationRDD
   			.map(line => (line.getInt(0),line.getString(1)))
-      val partBroadcast = sc.broadcast(part.collectAsMap)
+      val nationBroadcast = sc.broadcast(nation.collectAsMap)
   			
-      val suppDF = sparkSession.read.parquet(args.input() + "/supplier")
-      val suppRDD = suppDF.rdd
-  	  val supp = suppRDD
+      val customerDF = sparkSession.read.parquet(args.input() + "/customer")
+      val customerRDD = customerDF.rdd
+  	  val customer = customerRDD
   			.map(line => (line.getInt(0),line.getString(1)))
-      val suppBroadcast = sc.broadcast(supp.collectAsMap)
+            .map(line =>{
+                    val customerKey = line._1
+                    val nationKey = line._2
+                    val nationTable = nationBroadcast.value
+                    (customerKey,(nationKey,nationTable(nationKey)))
+                })
+      val customerBroadcast = sc.broadcast(customer.collectAsMap)
+
+      val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
+      val ordersRDD = ordersDF.rdd
+      val orders = ordersRDD.map(line => (line.getInt(0),line.getInt(1)))
+                    .map(line =>{
+                        val orderKey = line._1
+                        val customerKey = line._2
+                        val customerTable = customerBroadcast.value
+                        (orderKey,(customerTable(customerKey)))
+                    })
 
       val lineitemDF = sparkSession.read.parquet(args.input() + "/lineitem")
       val lineitemRDD = lineitemDF.rdd
   	  val result = lineitemRDD
-  			.map(line => (line.getInt(0),line.getInt(1),line.getInt(2),line.getString(10)))
-  			.filter(_._4.contains(date))
-            .map(line =>{
-                val orderKey = line._1
-                val partKey = line._2
-                val suppKey = line._3
-                val partTable = partBroadcast.value
-                val suppTable = suppBroadcast.value
-                (orderKey,(partTable(partKey),suppTable(suppKey)))
-            })
+  			.map(line => (line.getInt(0),line.getString(10)))
+  			.filter(_._2.contains(date))
+            .cogroup(orders)
+            .filter(_._2._1.size != 0)
+            .flatMap(line=>{
+                val nationGroup = new ListBuffer[(Int, String)]()
+                nationGroup += (line._2._2.head)
+                nationGroup.toList
+            }).map(pair => (pair,1))
+            .reduceByKey(_ + _)
+            .map(p => (p._1._1,(p._1._2,p._2)))
             .sortByKey()
             .take(20)
-            .map(line => (line._1,line._2._1,line._2._2))
+            .map(p => ((p._1,p._2._1),p._2._2))
             .foreach(println) 
-    }
+        }
 	}
 }
