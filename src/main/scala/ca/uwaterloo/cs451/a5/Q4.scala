@@ -46,7 +46,7 @@ object Q4 extends Tokenizer {
                         val customerKey = line._2
                         val customerTable = customerBroadcast.value
                         (orderKey,(customerTable(customerKey)))
-                    })sortByKey()
+                    }).sortByKey()
                     .take(20)
                     .foreach(println) 
       
