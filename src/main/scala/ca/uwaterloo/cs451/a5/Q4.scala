@@ -56,7 +56,7 @@ object Q4 extends Tokenizer {
       .cogroup(orders)
       .filter(_._2._1.size != 0)
       .flatMap(line=>{
-          line._2._2.head.toList
+          (line._2._2.head).toList
       }).map(pair => (pair,1))
       .reduceByKey(_ + _)
       .map(p => (p._1._1,(p._1._2,p._2)))
