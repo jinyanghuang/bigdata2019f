@@ -10,7 +10,7 @@ import org.rogach.scallop._
 import org.apache.spark.sql.SparkSession
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
-  mainOptions = Seq(input, output, reducers)
+  mainOptions = Seq(input, date, text, parquet)
   val input = opt[String](descr = "input path", required = true)
   val date = opt[String](descr = "date", required = true)
   val text = opt[Boolean](descr = "use text file", required = false)
@@ -37,7 +37,7 @@ object Q1 extends Tokenizer {
       .filter(_.contains(date))
       .count
 
-      println("ANSWER=\d+" + count)
+      println("ANSWER=" + count)
     } else if (args.parquet()) {
       val sparkSession = SparkSession.builder.getOrCreate
       val lineitemDF = sparkSession.read.parquet(args.input() + "/lineitem")
@@ -47,7 +47,7 @@ object Q1 extends Tokenizer {
   			.filter(_.contains(date))
   			.count
 
-  		println("ANSWER=\d+" + count)
+  		println("ANSWER=" + count)
     }
 	}
 }
