@@ -79,7 +79,7 @@ object Q4 extends Tokenizer {
       val customerDF = sparkSession.read.parquet(args.input() + "/customer")
       val customerRDD = customerDF.rdd
   	  val customer = customerRDD
-  			.map(line => (line.getInt(0),line.getString(1)))
+  			.map(line => (line.getInt(0),line.getInt(3)))
             .map(line =>{
                     val customerKey = line._1
                     val nationKey = line._2
