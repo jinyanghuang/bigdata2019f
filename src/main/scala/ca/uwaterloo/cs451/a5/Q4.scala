@@ -8,6 +8,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.rogach.scallop._
 import org.apache.spark.sql.SparkSession
+import scala.collection.mutable.ListBuffer
 
 
 object Q4 extends Tokenizer {
