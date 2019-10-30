@@ -27,19 +27,27 @@ object Q3 extends Tokenizer {
     if (args.text()) {
       val partFile = sc.textFile(args.input() + "/part.tbl")
       val part = partFile.map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1)))
-
+      val partBroadcast = sc.broadcast(part.collectAsMap)
 
       val supplierFile = sc.textFile(args.input() + "/supplier.tbl")
       val supplier = supplierFile.map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1)))
-
-      val textFile = sc.textFile(args.input() + "/lineitem.tbl")
+      val suppilerBroadcast = sc.broadcast(supplier.collectAsMap)
       
+      val textFile = sc.textFile(args.input() + "/lineitem.tbl")
       val result = textFile
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1).toInt,line.split("\\|")(2).toInt,line.split("\\|")(10)))
       .filter(_._2.contains(date))
-      .join(broadcast(part),Seq("partkey"))
+      .map(line =>{
+          val orderKey = line._1
+          val partKey = line._2
+          val suppKey = line._3
+          val partTable = partBroadcast.value
+          val suppTable = suppilerBroadcast.value
+          (orderKey,(partTable(partKey),suppTable(suppKey)))
+      })
       .sortByKey()
       .take(20)
+      .map(line => (line._1,line._2._1,line._2._2))
       .foreach(println) 
 
     } else if (args.parquet()) {
