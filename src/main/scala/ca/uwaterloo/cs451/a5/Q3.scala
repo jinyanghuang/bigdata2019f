@@ -74,7 +74,7 @@ object Q3 extends Tokenizer {
                 val partKey = line._2
                 val suppKey = line._3
                 val partTable = partBroadcast.value
-                val suppTable = suppilerBroadcast.value
+                val suppTable = suppBroadcast.value
                 (orderKey,(partTable(partKey),suppTable(suppKey)))
             })
             .sortByKey()
