@@ -18,7 +18,6 @@ object Q5 extends Tokenizer {
     val args = new Conf(argv)
 
     log.info("Input: " + args.input())
-    log.info("date: " + args.date())
 
     val conf = new SparkConf().setAppName("Q5")
     val sc = new SparkContext(conf)
@@ -26,7 +25,7 @@ object Q5 extends Tokenizer {
     if (args.text()) {
       val nationFile = sc.textFile(args.input() + "/nation.tbl")
       val nation = nationFile.map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1)))
-                            .filter(x => x._2 != "CANADA" || x._2 != "UNITED STATES")
+                            .filter(x => x._2.contains("CANADA") || x._2.contains("UNITED STATES"))
       val nationBroadcast = sc.broadcast(nation.collectAsMap)
 
       val customerFile = sc.textFile(args.input() + "/customer.tbl")
@@ -73,7 +72,7 @@ object Q5 extends Tokenizer {
       val nationDF = sparkSession.read.parquet(args.input() + "/nation")
       val nationRDD = nationDF.rdd
   	  val nation = nationRDD
-  			.map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1)))
+  			.map(line => (line.getInt(0),line.getString(1)))
             .filter(x => x._2 != "CANADA" || x._2 != "UNITED STATES")
       val nationBroadcast = sc.broadcast(nation.collectAsMap)
   			
