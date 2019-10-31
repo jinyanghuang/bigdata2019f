@@ -25,7 +25,6 @@ object Q5 extends Tokenizer {
     if (args.text()) {
       val nationFile = sc.textFile(args.input() + "/nation.tbl")
       val nation = nationFile.map(line => (line.split("\\|")(0).toInt,line.split("\\|")(1)))
-                            .filter(x => x._2.contains("CANADA") || x._2.contains("UNITED STATES"))
       val nationBroadcast = sc.broadcast(nation.collectAsMap)
 
       val customerFile = sc.textFile(args.input() + "/customer.tbl")
@@ -57,14 +56,16 @@ object Q5 extends Tokenizer {
       .cogroup(orders)
       .filter(_._2._1.size != 0)
       .flatMap(line=>{
-          val nationGroup = new ListBuffer[(String, String)]()
-          nationGroup += (line._2._2.head._2,line._2._1.head).toList
-          nationGroup.toList
-      }).map(pair => (pair,1))
+          val nationGroup = new ListBuffer[(String, String),Int]()
+          val dates = line._2._1.iterator
+          while (dates.hasNext){
+              nationGroup += (((dates.next(), line._2._2.head._2), 1))
+          }
+          nationGroup
+      })
       .reduceByKey(_ + _)
-      .map(p => (p._1._1,(p._1._2,p._2)))
-      .sortByKey()
-      .map(p => ((p._1,p._2._1),p._2._2))
+      .sortBy(_._1)
+      //.map(p => ((p._1,p._2._1),p._2._2))
       .foreach(println) 
 
     } else if (args.parquet()) {
@@ -73,7 +74,6 @@ object Q5 extends Tokenizer {
       val nationRDD = nationDF.rdd
   	  val nation = nationRDD
   			.map(line => (line.getInt(0),line.getString(1)))
-            .filter(x => x._2 != "CANADA" || x._2 != "UNITED STATES")
       val nationBroadcast = sc.broadcast(nation.collectAsMap)
   			
       val customerDF = sparkSession.read.parquet(args.input() + "/customer")
@@ -106,14 +106,16 @@ object Q5 extends Tokenizer {
             .cogroup(orders)
             .filter(_._2._1.size != 0)
             .flatMap(line=>{
-                val nationGroup = new ListBuffer[(String, String)]()
-                nationGroup += (line._2._2.head._2,line._2._1.head).toList
-                nationGroup.toList
-            }).map(pair => (pair,1))
+                val nationGroup = new ListBuffer[(String, String),Int]()
+                val dates = line._2._1.iterator
+                while (dates.hasNext){
+                    nationGroup += (((dates.next(), line._2._2.head._2), 1))
+                }
+          nationGroup
+            })
             .reduceByKey(_ + _)
-            .map(p => (p._1._1,(p._1._2,p._2)))
             .sortByKey()
-            .map(p => ((p._1,p._2._1),p._2._2))
+            // .map(p => ((p._1,p._2._1),p._2._2))
             .foreach(println) 
         }
 	}
