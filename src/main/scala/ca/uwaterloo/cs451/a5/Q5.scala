@@ -56,7 +56,7 @@ object Q5 extends Tokenizer {
       .cogroup(orders)
       .filter(_._2._1.size != 0)
       .flatMap(line=>{
-          val nationGroup = new ListBuffer[(String, String),Int]()
+          val nationGroup = new ListBuffer[((String, String),Int)]()
           val dates = line._2._1.iterator
           while (dates.hasNext){
               nationGroup += (((dates.next(), line._2._2.head._2), 1))
@@ -64,6 +64,7 @@ object Q5 extends Tokenizer {
           nationGroup
       })
       .reduceByKey(_ + _)
+      .filter(x=> x._1._2.contains("CANADA")|| x._1._2.contains("UNITED STATES"))
       .sortBy(_._1)
       //.map(p => ((p._1,p._2._1),p._2._2))
       .foreach(println) 
@@ -106,7 +107,7 @@ object Q5 extends Tokenizer {
             .cogroup(orders)
             .filter(_._2._1.size != 0)
             .flatMap(line=>{
-                val nationGroup = new ListBuffer[(String, String),Int]()
+                val nationGroup = new ListBuffer[((String, String),Int)]()
                 val dates = line._2._1.iterator
                 while (dates.hasNext){
                     nationGroup += (((dates.next(), line._2._2.head._2), 1))
@@ -114,6 +115,7 @@ object Q5 extends Tokenizer {
           nationGroup
             })
             .reduceByKey(_ + _)
+            .filter(x=> x._1._2.contains("CANADA")|| x._1._2.contains("UNITED STATES"))
             .sortByKey()
             // .map(p => ((p._1,p._2._1),p._2._2))
             .foreach(println) 
