@@ -59,7 +59,7 @@ object Q5 extends Tokenizer {
       .filter(_._2._1.size != 0)
       .flatMap(line=>{
           val nationGroup = new ListBuffer[(String, String)]()
-          nationGroup += (line._2._2.head._2,line._2._1.head)
+          nationGroup += (line._2._2.head._2,line._2._1.head).toList
           nationGroup.toList
       }).map(pair => (pair,1))
       .reduceByKey(_ + _)
@@ -108,7 +108,7 @@ object Q5 extends Tokenizer {
             .filter(_._2._1.size != 0)
             .flatMap(line=>{
                 val nationGroup = new ListBuffer[(String, String)]()
-                nationGroup += (line._2._2.head._2,line._2._1.head)
+                nationGroup += (line._2._2.head._2,line._2._1.head).toList
                 nationGroup.toList
             }).map(pair => (pair,1))
             .reduceByKey(_ + _)
