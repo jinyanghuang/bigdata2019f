@@ -80,7 +80,7 @@ object Q7 extends Tokenizer {
 
       val ordersDF = sparkSession.read.parquet(args.input() + "/orders")
       val ordersRDD = ordersDF.rdd
-      val orders = ordersRDD.map(line => (line.getInt(0),line.getInt(1),line.getString(4),line.getString(7)))
+      val orders = ordersRDD.map(line => (line.getInt(0),line.getInt(1),line.getString(4),line.getInt(7)))
                     .map(line =>{
                         val orderKey = line._1
                         val customerKey = line._2
