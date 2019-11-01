@@ -54,8 +54,8 @@ object Q6 extends Tokenizer {
                 val returnflag = line.getString(8)
                 val lineStatus = line.getString(9)
                 val quantity = line.getInt(4)
-                val extendedPrice = line.getDouble(5).
-                val discount = line.getDouble(6).toDouble
+                val extendedPrice = line.getDouble(5)
+                val discount = line.getDouble(6)
                 val tax = line.getDouble(7)
                 val discPrice = extendedPrice * (1 - discount)
                 val charge = discPrice * (1 - tax)
