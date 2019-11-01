@@ -66,6 +66,7 @@ object Q5 extends Tokenizer {
       .reduceByKey(_ + _)
       .filter(x=> x._1._2.contains("CANADA")|| x._1._2.contains("UNITED STATES"))
       .sortBy(_._1)
+      .collect()
       .map(p => (p._1._1,p._1._2,p._2))
       .foreach(println) 
 
@@ -116,7 +117,8 @@ object Q5 extends Tokenizer {
             })
             .reduceByKey(_ + _)
             .filter(x=> x._1._2.contains("CANADA")|| x._1._2.contains("UNITED STATES"))
-            .sortByKey()
+            .sortBy(_._1)
+            .collect()
             .map(p => (p._1._1,p._1._2,p._2))
             .foreach(println) 
         }
