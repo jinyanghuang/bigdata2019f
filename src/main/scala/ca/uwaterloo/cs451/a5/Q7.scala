@@ -51,7 +51,7 @@ object Q7 extends Tokenizer {
           val extendedPrice = lineItem(5).toDouble
           val discount = lineItem(6).toDouble
           val revenue = extendedPrice * (1-discount)
-          (orderKey,revenue))
+          (orderKey,revenue)
       })
       .reduceByKey(_ + _)
       .cogroup(orders)
@@ -65,6 +65,9 @@ object Q7 extends Tokenizer {
           (revenue, (customerName, orderKey, orderDate, shipPriority))
       })
       .sortByKey(false)
+      .collect()
+      .take(10)
+      .map(p=>(p._2._1, p._2._2, p._1, p._2._3, p._2._4))
       .foreach(println) 
 
     } else if (args.parquet()) {
