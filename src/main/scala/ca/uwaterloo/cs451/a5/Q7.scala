@@ -44,10 +44,27 @@ object Q7 extends Tokenizer {
 
       val lineFile = sc.textFile(args.input() + "/lineitem.tbl")
       val result = lineFile
-      .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
-      .filter( p=> p._2 > date)
+      .filter(line => line.split("\\|")(10) > date)
+      .map(line => {
+          val lineItem = line.split("\\|")
+          val orderKey = lineItem(0).toInt
+          val extendedPrice = lineItem(5).toDouble
+          val discount = lineItem(6).toDouble
+          val revenue = extendedPrice * (1-discount)
+          (orderKey,revenue))
+      })
+      .reduceByKey(_ + _)
       .cogroup(orders)
       .filter( p => p._2._1.size != 0 && p._2._2.size != 0)
+      .map(p =>{
+          val customerName = p._2._2.head._1
+          val orderKey = p._1
+          val orderDate = p._2._2.head._2
+          val shipPriority = p._2._2.head._3
+          val revenue = p._2._1.foldLeft(0.0)((a, b) => a + b)
+          (revenue, (customerName, orderKey, orderDate, shipPriority))
+      })
+      .sortByKey(false)
       .foreach(println) 
 
     } else if (args.parquet()) {
