@@ -40,10 +40,11 @@ object Q6 extends Tokenizer {
           ((returnflag,lineStatus),(quantity, extendedPrice, discPrice, charge, discount, 1))
       }).reduceByKey((x,y) => (x._1+y._1, x._2+y._2, x._3+y._3, x._4+y._4, x._5+y._5, x._6+y._6))
       .collect()
-      .foreach(p => {
+      .map(p => {
           val count = p._2._6
-          println(p._1._1, p._1._2, p._2._1, p._2._2, p._2._3, p._2._4, p._2._1/count, p._2._2/count, p._2._5/count, count)
+          (p._1._1, p._1._2, p._2._1, p._2._2, p._2._3, p._2._4, p._2._1/count, p._2._2/count, p._2._5/count, count)
       })
+      .foreach(println)
     } else if (args.parquet()) {
       val sparkSession = SparkSession.builder.getOrCreate
       val lineitemDF = sparkSession.read.parquet(args.input() + "/lineitem")
@@ -63,10 +64,11 @@ object Q6 extends Tokenizer {
               })
             .reduceByKey((x,y) => (x._1+y._1, x._2+y._2, x._3+y._3, x._4+y._4, x._5+y._5, x._6+y._6))
             .collect()
-  			.foreach(p => {
+  			.map(p => {
                 val count = p._2._6
-                println(p._1._1, p._1._2, p._2._1, p._2._2, p._2._3, p._2._4, p._2._1/count, p._2._2/count, p._2._5/count, count)
+                (p._1._1, p._1._2, p._2._1, p._2._2, p._2._3, p._2._4, p._2._1/count, p._2._2/count, p._2._5/count, count)
             })
+            .foreach(println)
         }
 	}
 }
