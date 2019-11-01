@@ -64,7 +64,6 @@ object Q4 extends Tokenizer {
       .reduceByKey(_ + _)
       .map(p => (p._1._1,(p._1._2,p._2)))
       .sortByKey()
-      .take(20)
       .map(p => ((p._1,p._2._1),p._2._2))
       .foreach(println) 
 
@@ -113,7 +112,6 @@ object Q4 extends Tokenizer {
             .reduceByKey(_ + _)
             .map(p => (p._1._1,(p._1._2,p._2)))
             .sortByKey()
-            .take(20)
             .map(p => ((p._1,p._2._1),p._2._2))
             .foreach(println) 
         }
