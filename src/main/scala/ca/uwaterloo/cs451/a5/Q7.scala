@@ -47,6 +47,7 @@ object Q7 extends Tokenizer {
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
       .filter( p=> p._2 > date)
       .cogroup(orders)
+      .filter( p => p._2._1.size != 0 && p._2._2.size != 0)
       .foreach(println) 
 
     } else if (args.parquet()) {
