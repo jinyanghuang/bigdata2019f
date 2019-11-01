@@ -35,13 +35,17 @@ object Q7 extends Tokenizer {
                     .map(line =>{
                         val orderKey = line._1
                         val customerKey = line._2
+                        val orderDate = line._3
+                        val shipPriority = line._4
                         val customerTable = customerBroadcast.value
-                        (orderKey,(customerTable(customerKey),line._3,line._4))
+                        (orderKey,(customerTable(customerKey),orderDate,shipPriority))
                     })
+                    .filter(p = p._2._2 < date)
+
       val lineFile = sc.textFile(args.input() + "/lineitem.tbl")
       val result = lineFile
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
-      .filter(_._2.contains(date))
+      .filter( p=> p._2 > date)
       .cogroup(orders)
       .foreach(println) 
 
