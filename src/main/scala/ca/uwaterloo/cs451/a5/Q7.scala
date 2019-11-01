@@ -40,7 +40,7 @@ object Q7 extends Tokenizer {
                         val customerTable = customerBroadcast.value
                         (orderKey,(customerTable(customerKey),orderDate,shipPriority))
                     })
-                    .filter(p = p._2._2 < date)
+                    .filter(p => p._2._2 < date)
 
       val lineFile = sc.textFile(args.input() + "/lineitem.tbl")
       val result = lineFile
