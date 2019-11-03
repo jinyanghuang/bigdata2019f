@@ -54,13 +54,11 @@ object Q4 extends Tokenizer {
       val result = lineFile
       .map(line => (line.split("\\|")(0).toInt,line.split("\\|")(10)))
       .filter(_._2.contains(date))
+      .map(line => (line._1,1))
+      .reduceByKey(_ + _)
       .cogroup(orders)
       .filter(_._2._1.size != 0)
-      .flatMap(line=>{
-          val nationGroup = new ListBuffer[(Int, String)]()
-          nationGroup += (line._2._2.head)
-          nationGroup.toList
-      }).map(pair => (pair,1))
+      .map(line=>((line._2._2.head),line._2._1.head))
       .reduceByKey(_ + _)
       .map(p => (p._1._1,(p._1._2,p._2)))
       .sortByKey()
@@ -107,10 +105,7 @@ object Q4 extends Tokenizer {
             .reduceByKey(_ + _)
             .cogroup(orders)
             .filter(_._2._1.size != 0)
-            .map(line=>{
-                ((line._2._2.head),line._2._1.head)
-                
-            })
+            .map(line=>((line._2._2.head),line._2._1.head))
             .reduceByKey(_ + _)
             .map(p => (p._1._1,(p._1._2,p._2)))
             .sortByKey()
