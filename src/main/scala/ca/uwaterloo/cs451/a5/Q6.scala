@@ -36,7 +36,7 @@ object Q6 extends Tokenizer {
           val discount = lineItem(6).toDouble
           val tax = lineItem(7).toDouble
           val discPrice = extendedPrice * (1 - discount)
-          val charge = discPrice * (1 - tax)
+          val charge = discPrice * (1 + tax)
           ((returnflag,lineStatus),(quantity, extendedPrice, discPrice, charge, discount, 1))
       }).reduceByKey((x,y) => (x._1+y._1, x._2+y._2, x._3+y._3, x._4+y._4, x._5+y._5, x._6+y._6))
       .collect()
@@ -59,7 +59,7 @@ object Q6 extends Tokenizer {
                 val discount = line.getDouble(6)
                 val tax = line.getDouble(7)
                 val discPrice = extendedPrice * (1 - discount)
-                val charge = discPrice * (1 - tax)
+                val charge = discPrice * (1 + tax)
                 ((returnflag,lineStatus),(quantity, extendedPrice, discPrice, charge, discount, 1)) 
               })
             .reduceByKey((x,y) => (x._1+y._1, x._2+y._2, x._3+y._3, x._4+y._4, x._5+y._5, x._6+y._6))
