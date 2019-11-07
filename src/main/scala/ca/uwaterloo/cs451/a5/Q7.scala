@@ -67,7 +67,7 @@ object Q7 extends Tokenizer {
       .sortByKey(false)
       .collect()
       .take(10)
-      .map(p=>(p._2._1, p._2._2, p._1, p._2._3, p._2._4)
+      .map(p=>(p._2._1, p._2._2, p._1, p._2._3, p._2._4))
       .foreach(println) 
 
     } else if (args.parquet()) {
@@ -116,7 +116,7 @@ object Q7 extends Tokenizer {
             .sortByKey(false)
             .collect()
             .take(10)
-            .map(p=>(p._2._1, p._2._2, p._1, p._2._3, p._2._4)
+            .map(p=>(p._2._1, p._2._2, p._1, p._2._3, p._2._4))
             .foreach(println) 
         }
 	}
