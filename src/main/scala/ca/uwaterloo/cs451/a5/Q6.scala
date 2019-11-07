@@ -31,7 +31,7 @@ object Q6 extends Tokenizer {
           val lineItem = line.split("\\|")
           val returnflag = lineItem(8)
           val lineStatus = lineItem(9)
-          val quantity = lineItem(4).toInt
+          val quantity = lineItem(4).toDouble
           val extendedPrice = lineItem(5).toDouble
           val discount = lineItem(6).toDouble
           val tax = lineItem(7).toDouble
@@ -54,7 +54,7 @@ object Q6 extends Tokenizer {
   			.map(line => {
                 val returnflag = line.getString(8)
                 val lineStatus = line.getString(9)
-                val quantity = line.getDouble(4).toInt
+                val quantity = line.getDouble(4)
                 val extendedPrice = line.getDouble(5)
                 val discount = line.getDouble(6)
                 val tax = line.getDouble(7)
