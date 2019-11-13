@@ -7,10 +7,10 @@ import org.apache.hadoop.fs._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.rogach.scallop._
-import org.apache.spark.sql.SparkSession
+import scala.math.exp
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
-  mainOptions = Seq(input, date, text, parquet)
+  mainOptions = Seq(input, model)
   val input = opt[String](descr = "input path", required = true)
   val model = opt[String](descr = "output directory", required = true)
   verify()
@@ -31,7 +31,7 @@ object TrainSpamClassifier extends Tokenizer {
     val textFile = sc.textFile(args.input())
 
     // w is the weight vector (make sure the variable is within scope)
-    val w = Map[Int, Double]()
+    val w = scala.collection.mutable.Map[Int, Double]()
 
     // Scores a document based on its list of features.
     def spamminess(features: Array[Int]) : Double = {
@@ -43,31 +43,12 @@ object TrainSpamClassifier extends Tokenizer {
     // This is the main learner:
     val delta = 0.002
 
-    // For each instance...
-    val isSpam = ...   // label
-    val features = ... // feature vector of the training instance
-
-    // Update the weights as follows:
-    val score = spamminess(features)
-    val prob = 1.0 / (1 + exp(-score))
-    features.foreach(f => {
-        if (w.contains(f)) {
-            w(f) += (isSpam - prob) * delta
-        } else {
-            w(f) = (isSpam - prob) * delta
-        }
-    })
-
     val trained = textFile.map(line =>{
         val tokens = line.split(" ")
-        val doc = tokens(0)
-        val isSpam
-        if tokens(1) == "spam" {
-            isSpam = 1d
-        }else{
-            isSpam = 0d
-        }
-        val features = tokens.drop(2).toInt
+        val docid = tokens(0)
+        val isSpam = if(tokens(1)=="spam") 1d else 0d
+    
+        val features = tokens.drop(2).map(line => (line.toInt))
         
         (0, (docid, isSpam, features))
         }).groupByKey(1)
