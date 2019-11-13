@@ -12,7 +12,7 @@ import scala.math.exp
 class Conf(args: Seq[String]) extends ScallopConf(args) {
   mainOptions = Seq(input, model)
   val input = opt[String](descr = "input path", required = true)
-  val model = opt[String](descr = "output directory", required = true)
+  val model = opt[String](descr = "model directory", required = true)
   verify()
 }
 
@@ -23,7 +23,7 @@ object TrainSpamClassifier extends Tokenizer {
     val args = new Conf(argv)
 
     log.info("Input: " + args.input())
-    log.info("Output: " + args.model())
+    log.info("Model: " + args.model())
 
     val conf = new SparkConf().setAppName("TrainSpamClassifier")
     val sc = new SparkContext(conf)
