@@ -61,7 +61,6 @@ object ApplySpamClassifier extends Tokenizer {
         val features = tokens.drop(2).map(line => (line.toInt))
     
         val score = spamminess(features)
-        val modelTable = modelBroadCast.value
         val prediction = if (score > 0) "spam" else "ham"
         (docid, isSpam, score, prediction)
     })
