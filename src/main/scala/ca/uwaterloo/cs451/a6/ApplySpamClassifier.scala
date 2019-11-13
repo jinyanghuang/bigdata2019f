@@ -38,7 +38,7 @@ object ApplySpamClassifier extends Tokenizer {
                 .map(line =>{
                     val tokens = line.substring(1,line.length()-1).split(",")
                     val feature = tokens(0).toInt
-                    val score = tokens(0).toDouble
+                    val score = tokens(1).toDouble
                     (feature, score)
                 }).collectAsMap
     val modelBroadCast = sc.broadcast(model)
