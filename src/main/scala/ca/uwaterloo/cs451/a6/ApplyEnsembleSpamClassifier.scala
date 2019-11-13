@@ -66,18 +66,19 @@ object ApplyEnsembleSpamClassifier extends Tokenizer {
     // Scores a document based on its list of features.
     def spamminess(features: Array[Int], model_id: Int) : Double = {
         var score = 0d
+        var modelTable = scala.collection.Map[Int, Double]()
         if (model_id == 1){
-            val modelTable = modelBroadCast1.value
+            modelTable = modelBroadCast1.value
         }else if (model_id == 2){
-            val modelTable = modelBroadCast2.value
+            modelTable = modelBroadCast2.value
         }else {
-            val modelTable = modelBroadCast3.value
+            modelTable = modelBroadCast3.value
         }
         features.foreach(f => if (modelTable.contains(f)) score += modelTable(f))
         score
     }
 
-    if (args.method == "average"){
+    if (args.method() == "average"){
         val predict = textFile.map(line =>{
         val tokens = line.split(" ")
         val docid = tokens(0)
@@ -111,7 +112,7 @@ object ApplyEnsembleSpamClassifier extends Tokenizer {
         val vote2 = if (score2 > 0) 1d else -1d
         val vote3 = if (score3 > 0) 1d else -1d
         val score = vote1 + vote2 + vote3
-        val predict = if (score > 0) "spam" else "ham"
+        val prediction = if (score > 0) "spam" else "ham"
         (docid, isSpam, score, prediction)
         })
         // Then run the trainer...
