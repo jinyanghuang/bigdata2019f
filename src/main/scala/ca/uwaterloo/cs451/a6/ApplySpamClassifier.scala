@@ -35,7 +35,13 @@ object ApplySpamClassifier extends Tokenizer {
 
     val textFile = sc.textFile(args.input())
     val model = sc.textFile(args.model()+"/part-00000")
-    val modelBroadCast = sc.broadcast(model.collectAsMap)
+                .map(line =>{
+                    val tokens = line.substring(1,line.length()-1).split(",")
+                    val feature = tokens(0).toInt
+                    val score = tokens(0).toDouble
+                    (feature, score)
+                }).collectAsMap
+    val modelBroadCast = sc.broadcast(model)
 
 
     // Scores a document based on its list of features.
@@ -46,8 +52,6 @@ object ApplySpamClassifier extends Tokenizer {
         score
     }
 
-    // This is the main learner:
-    val delta = 0.002
 
     val predict = textFile.map(line =>{
         val tokens = line.split(" ")
