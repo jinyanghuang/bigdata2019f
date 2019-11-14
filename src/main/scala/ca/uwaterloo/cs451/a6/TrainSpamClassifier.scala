@@ -10,9 +10,10 @@ import org.rogach.scallop._
 import scala.math.exp
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
-  mainOptions = Seq(input, model)
+  mainOptions = Seq(input, model, shuffle)
   val input = opt[String](descr = "input path", required = true)
   val model = opt[String](descr = "model directory", required = true)
+  val shuffle = opt[Boolean](descr = "shuffle", required = false)
   verify()
 }
 
@@ -40,6 +41,13 @@ object TrainSpamClassifier extends Tokenizer {
         score
     }
 
+    if(args.shuffle()){
+        textFile.map(text => {
+            (scala.util.Random.nextInt(), line)
+            .sortByKey()
+            .map(line => line._2)
+        })
+    }
     // This is the main learner:
     val delta = 0.002
 
