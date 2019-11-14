@@ -42,11 +42,9 @@ object TrainSpamClassifier extends Tokenizer {
     }
 
     if(args.shuffle()){
-        textFile.map(text => {
-            (scala.util.Random.nextInt(), text))
+        textFile.map(text => (scala.util.Random.nextInt(), text))
             .sortByKey()
             .map(line => line._2)
-        })
     }
     // This is the main learner:
     val delta = 0.002
