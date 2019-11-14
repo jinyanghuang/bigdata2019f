@@ -29,6 +29,8 @@ object TrainSpamClassifier extends Tokenizer {
     val conf = new SparkConf().setAppName("TrainSpamClassifier")
     val sc = new SparkContext(conf)
 
+    val modelDir = new Path(args.model())
+	FileSystem.get(sc.hadoopConfiguration).delete(modelDir, true)
     val textFile = sc.textFile(args.input())
 
     // w is the weight vector (make sure the variable is within scope)
