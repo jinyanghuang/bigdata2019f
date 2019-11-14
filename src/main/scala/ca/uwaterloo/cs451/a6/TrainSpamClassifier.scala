@@ -43,7 +43,7 @@ object TrainSpamClassifier extends Tokenizer {
 
     if(args.shuffle()){
         textFile.map(text => {
-            (scala.util.Random.nextInt(), line)
+            (scala.util.Random.nextInt(), text)
             .sortByKey()
             .map(line => line._2)
         })
