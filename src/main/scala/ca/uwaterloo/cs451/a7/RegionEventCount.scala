@@ -56,9 +56,9 @@ object RegionEventCount {
     val stream = ssc.queueStream(inputData)
 
     val wc = stream.map(_.split(","))
-      .filter( p=> ((p._7<=-74.013777 && p._7 >= -74.0141012 && p._8 >= 40.7152191 && p._8 <= 40.7152275) || (p._7>=-74.011869 && p._7 <= -74.009867 && p._8 <= 40.7217236 && p._8 >= 40.721493)))
+      .filter( p=> ((p._7.toInt<=-74.013777 && p._7.toInt >= -74.0141012 && p._8.toInt >= 40.7152191 && p._8.toInt <= 40.7152275) || (p._7.toInt>=-74.011869 && p._7.toInt <= -74.009867 && p._8.toInt <= 40.7217236 && p._8.toInt >= 40.721493)))
       .map(tuple => {
-          if (p._7<=-74.013777 && p._7 >= -74.0141012 && p._8 >= 40.7152191 && p._8 <= 40.7152275){
+          if (tuple._7.toInt<=-74.013777 && tuple._7.toInt >= -74.0141012 && tuple._8.toInt >= 40.7152191 && tuple._8.toInt <= 40.7152275){
               ("goldman",1)
           }else{
               ("citigroup",1)
