@@ -56,14 +56,28 @@ object RegionEventCount {
     val stream = ssc.queueStream(inputData)
 
     val wc = stream.map(_.split(","))
-      .filter( p=> ((p._7.toInt<=-74.013777 && p._7.toInt >= -74.0141012 && p._8.toInt >= 40.7152191 && p._8.toInt <= 40.7152275) || (p._7.toInt>=-74.011869 && p._7.toInt <= -74.009867 && p._8.toInt <= 40.7217236 && p._8.toInt >= 40.721493)))
-      .map(tuple => {
-          if (tuple._7.toInt<=-74.013777 && tuple._7.toInt >= -74.0141012 && tuple._8.toInt >= 40.7152191 && tuple._8.toInt <= 40.7152275){
-              ("goldman",1)
-          }else{
-              ("citigroup",1)
+      .map( p=> {
+          if (p._1 === "yellow"){
+              if(p._11.toInt<=-74.013777 && p._11.toInt >= -74.0141012 && p._12.toInt >= 40.7152191 && p._12.toInt <= 40.7152275){
+                  ("goldman" , 1)
+              }else if(p._11.toInt>=-74.011869 && p._11.toInt <= -74.009867 && p._12.toInt <= 40.7217236 && p._12.toInt >= 40.721493){
+                  ("citigroup",1)
+              }else{
+                  ("grabage",1)
+              }
           }
-      })
+          else{
+              if(p._9.toInt<=-74.013777 && p._9.toInt >= -74.0141012 && p._10.toInt >= 40.7152191 && p._10.toInt <= 40.7152275){
+                  ("goldman" , 1)
+              }else if(p._9.toInt>=-74.011869 && p._9.toInt <= -74.009867 && p._10.toInt <= 40.7217236 && p._10.toInt >= 40.721493){
+                  ("citigroup",1)
+              }else{
+                  ("grabage",1)
+              }
+          }
+          })
+      .filter(_._1 != "grabage")
+      
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(60), Minutes(60))
       .persist()
