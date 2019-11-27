@@ -57,19 +57,19 @@ object RegionEventCount {
 
     val wc = stream.map(_.split(","))
       .map( p=> {
-          if (p(0) === "yellow"){
-              if(p(10).toDoule<=-74.013777 && p(10).toDoule >= -74.0141012 && p(11).toDoule >= 40.7152191 && p(11).toDoule <= 40.7152275){
+          if (p(0) == "yellow"){
+              if(p(10).toDouble<=-74.013777 && p(10).toDouble >= -74.0141012 && p(11).toDouble >= 40.7152191 && p(11).toDouble <= 40.7152275){
                   ("goldman" , 1)
-              }else if(p(10).toDoule>=-74.011869 && p(10).toDoule <= -74.009867 && p(11).toDoule <= 40.7217236 && p(11).toDoule >= 40.721493){
+              }else if(p(10).toDouble>=-74.011869 && p(10).toDouble <= -74.009867 && p(11).toDouble <= 40.7217236 && p(11).toDouble >= 40.721493){
                   ("citigroup",1)
               }else{
                   ("grabage",1)
               }
           }
           else{
-              if(p(8).toDoule<=-74.013777 && p(8).toDoule >= -74.0141012 && p(9).toDoule >= 40.7152191 && p(9).toDoule <= 40.7152275){
+              if(p(8).toDouble <=-74.013777 && p(8).toDouble >= -74.0141012 && p(9).toDouble >= 40.7152191 && p(9).toDouble <= 40.7152275){
                   ("goldman" , 1)
-              }else if(p(8).toDoule>=-74.011869 && p(8).toDoule <= -74.009867 && p(9).toDoule <= 40.7217236 && p(9).toDoule >= 40.721493){
+              }else if(p(8).toDouble >=-74.011869 && p(8).toDouble <= -74.009867 && p(9).toDouble <= 40.7217236 && p(9).toDouble >= 40.721493){
                   ("citigroup",1)
               }else{
                   ("grabage",1)
