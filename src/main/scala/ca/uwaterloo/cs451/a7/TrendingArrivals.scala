@@ -75,17 +75,16 @@ object TrendingArrivals {
   }
 
   def trending(batchTime: Time, key: String, value: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
-      val time = batchTime.toString().split(" ")(0)
       val previousState = state.getOption.getOrElse(0)
       val currentState = value.getOrElse(0)
       if(currentState >= 10 && currentState >= 2*previousState){
           if(key == "citigroup"){
-              log.info("Number of arrivals to Citigroup has doubled from " + previousState + " to " + currentState + " at " + time + "!")
+              log.info("Number of arrivals to Citigroup has doubled from " + previousState + " to " + currentState + " at " + batchTime.toMilliSeconds, + "!")
           }else if(key == "goldman"){
-              log.info("Number of arrivals to Goldman has doubled from " + previousState + " to " + currentState + " at " + time + "!")
+              log.info("Number of arrivals to Goldman has doubled from " + previousState + " to " + currentState + " at " + batchTime.toMilliSeconds, + "!")
           }
       }
-      val output = (key, (currentState, time.toLong, previousState))
+      val output = (key, (currentState, batchTime.toMilliSeconds, previousState))
       state.update(currentState)
       Some(output)
   }
