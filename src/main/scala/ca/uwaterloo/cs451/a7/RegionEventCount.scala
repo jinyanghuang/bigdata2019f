@@ -42,10 +42,10 @@ object RegionEventCount {
       val cy = 40.7138745
       val dx = -74.0144185
       val dy = 40.7140753
-      val a = ((bx - ax)*(y - ay) - (by - ay)*(x - ax))
-      val b = ((cx - bx)*(y - by) - (cy - by)*(x - bx))
-      val c = ((dx - cx)*(y - cy) - (dy - cy)*(x - cx))
-      val b = ((ax - dx)*(y - dy) - (ay - dy)*(x - dx))
+      val a = (bx - ax)*(y - ay) - (by - ay)*(x - ax)
+      val b = (cx - bx)*(y - by) - (cy - by)*(x - bx)
+      val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx)
+      val d = (ax - dx)*(y - dy) - (ay - dy)*(x - dx)
       if((a>0 && b>0 && c>0 && d>0) || (a<0 && b<0 && c<0 && d<0)){
           true
       }else{
@@ -62,10 +62,10 @@ object RegionEventCount {
       val cy = 40.720053
       val dx = -74.012083
       val dy = 40.720267
-      val a = ((bx - ax)*(y - ay) - (by - ay)*(x - ax))
-      val b = ((cx - bx)*(y - by) - (cy - by)*(x - bx))
-      val c = ((dx - cx)*(y - cy) - (dy - cy)*(x - cx))
-      val b = ((ax - dx)*(y - dy) - (ay - dy)*(x - dx))
+      val a = (bx - ax)*(y - ay) - (by - ay)*(x - ax)
+      val b = (cx - bx)*(y - by) - (cy - by)*(x - bx)
+      val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx)
+      val d = (ax - dx)*(y - dy) - (ay - dy)*(x - dx)
       if((a>0 && b>0 && c>0 && d>0) || (a<0 && b<0 && c<0 && d<0)){
           true
       }else{
