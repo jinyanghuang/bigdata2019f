@@ -47,9 +47,9 @@ object RegionEventCount {
       val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx);
       val b = (ax - dx)*(y - dy) - (ay - dy)*(x - dx);
       if((a>0 && b>0 && c>0 && d>0) || (a<0 && b<0 && c<0 && d<0)){
-          return true;
+          true
       }else{
-          return false;
+          false
       }
   }
 
@@ -67,9 +67,9 @@ object RegionEventCount {
       val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx);
       val b = (ax - dx)*(y - dy) - (ay - dy)*(x - dx);
       if((a>0 && b>0 && c>0 && d>0) || (a<0 && b<0 && c<0 && d<0)){
-          return true;
+          true
       }else{
-          return false;
+          false
       }
   }
 
