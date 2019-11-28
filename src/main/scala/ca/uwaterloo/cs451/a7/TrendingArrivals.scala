@@ -25,6 +25,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StreamingContext}
 import org.apache.spark.streaming.scheduler.{StreamingListener, StreamingListenerBatchCompleted}
+import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StreamingContext, Time, Seconds, StateSpec, State}
 import org.apache.spark.util.LongAccumulator
 import org.rogach.scallop._
 
@@ -111,10 +112,6 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
-    val stateSpec = StateSpec.function(trending _)
-                        .numPartitions(2)
-                        .timeout(Minutes(10))
-
     val wc = stream.map(_.split(","))
       .map( p=> {
           if (p(0) == "yellow"){
@@ -140,7 +137,7 @@ object TrendingArrivals {
       
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      .mapWithState(stateSpec)
+      .mapWithState(StateSpec.function(trending _).timeout(Minutes(10)))
       .persist()
 
     wc.saveAsTextFiles(args.output())
