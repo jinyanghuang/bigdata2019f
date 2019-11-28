@@ -111,6 +111,10 @@ object TrendingArrivals {
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
+    val stateSpec = StateSpec.function(trending _)
+                        .numPartitions(2)
+                        .timeout(Minutes(10))
+
     val wc = stream.map(_.split(","))
       .map( p=> {
           if (p(0) == "yellow"){
@@ -136,7 +140,7 @@ object TrendingArrivals {
       
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      .mapWithState(StateSpec.function(trending _).timeout(Minutes(10)))
+      .mapWithState(stateSpec)
       .persist()
 
     wc.saveAsTextFiles(args.output())
