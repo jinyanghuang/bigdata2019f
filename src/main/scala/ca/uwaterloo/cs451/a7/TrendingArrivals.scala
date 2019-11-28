@@ -79,12 +79,12 @@ object TrendingArrivals {
       val currentState = value.getOrElse(0)
       if(currentState >= 10 && currentState >= 2*previousState){
           if(key == "citigroup"){
-              log.info("Number of arrivals to Citigroup has doubled from " + previousState + " to " + currentState + " at " + batchTime.toMilliSeconds, + "!")
+              log.info("Number of arrivals to Citigroup has doubled from " + previousState + " to " + currentState + " at " + batchTime.toMilliseconds, + "!")
           }else if(key == "goldman"){
-              log.info("Number of arrivals to Goldman has doubled from " + previousState + " to " + currentState + " at " + batchTime.toMilliSeconds, + "!")
+              log.info("Number of arrivals to Goldman has doubled from " + previousState + " to " + currentState + " at " + batchTime.toMilliseconds, + "!")
           }
       }
-      val output = (key, (currentState, batchTime.toMilliSeconds, previousState))
+      val output = (key, (currentState, batchTime.toMilliseconds, previousState))
       state.update(currentState)
       Some(output)
   }
