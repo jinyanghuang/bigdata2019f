@@ -140,7 +140,7 @@ object TrendingArrivals {
       .mapWithState(StateSpec.function(trending _).timeout(Minutes(10)))
       .persist()
 
-    wc.saveAsTextFiles(args.output())
+    wc.saveAsTextFiles(args.output()+"/part-")
 
     wc.foreachRDD(rdd => {
       numCompletedRDDs.add(1L)
