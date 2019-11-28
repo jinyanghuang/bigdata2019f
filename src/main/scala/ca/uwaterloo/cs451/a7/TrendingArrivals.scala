@@ -35,19 +35,19 @@ object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
 
   def insideGoldman (x: Double,  y: Double): Boolean ={
-      val ax = -74.0141012
-      val ay = 40.7152191
-      val bx = -74.013777
-      val by = 40.7152275
-      val cx = -74.0141027
-      val cy = 40.7138745
-      val dx = -74.0144185
-      val dy = 40.7140753
-      val a = (bx - ax)*(y - ay) - (by - ay)*(x - ax)
-      val b = (cx - bx)*(y - by) - (cy - by)*(x - bx)
-      val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx)
-      val d = (ax - dx)*(y - dy) - (ay - dy)*(x - dx)
-      if((a>0 && b>0 && c>0 && d>0) || (a<0 && b<0 && c<0 && d<0)){
+    //   val ax = -74.0141012
+    //   val ay = 40.7152191
+    //   val bx = -74.013777
+    //   val by = 40.7152275
+    //   val cx = -74.0141027
+    //   val cy = 40.7138745
+    //   val dx = -74.0144185
+    //   val dy = 40.7140753
+    //   val a = (bx - ax)*(y - ay) - (by - ay)*(x - ax)
+    //   val b = (cx - bx)*(y - by) - (cy - by)*(x - bx)
+    //   val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx)
+    //   val d = (ax - dx)*(y - dy) - (ay - dy)*(x - dx)
+      if(x >= -74.0144185 && x <= -74.013777 && y >= 40.7138745 && y <= 40.7152275){
           true
       }else{
           false
@@ -55,19 +55,19 @@ object TrendingArrivals {
   }
 
   def insideCitigroup (x: Double, y: Double): Boolean ={
-      val ax = -74.011869
-      val ay = 40.7217236
-      val bx = -74.009867
-      val by = 40.721493
-      val cx = -74.010140
-      val cy = 40.720053
-      val dx = -74.012083
-      val dy = 40.720267
-      val a = (bx - ax)*(y - ay) - (by - ay)*(x - ax)
-      val b = (cx - bx)*(y - by) - (cy - by)*(x - bx)
-      val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx)
-      val d = (ax - dx)*(y - dy) - (ay - dy)*(x - dx)
-      if((a>0 && b>0 && c>0 && d>0) || (a<0 && b<0 && c<0 && d<0)){
+    //   val ax = -74.011869
+    //   val ay = 40.7217236
+    //   val bx = -74.009867
+    //   val by = 40.721493
+    //   val cx = -74.010140
+    //   val cy = 40.720053
+    //   val dx = -74.012083
+    //   val dy = 40.720267
+    //   val a = (bx - ax)*(y - ay) - (by - ay)*(x - ax)
+    //   val b = (cx - bx)*(y - by) - (cy - by)*(x - bx)
+    //   val c = (dx - cx)*(y - cy) - (dy - cy)*(x - cx)
+    //   val d = (ax - dx)*(y - dy) - (ay - dy)*(x - dx)
+      if(x >= -74.012083 && x <= -74.009867 && y >= 40.720053 && y <= 40.7217236){
           true
       }else{
           false
