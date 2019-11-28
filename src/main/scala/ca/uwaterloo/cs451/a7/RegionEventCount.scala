@@ -33,7 +33,7 @@ import scala.collection.mutable
 object RegionEventCount {
   val log = Logger.getLogger(getClass().getName())
 
-  def insideGoldman (Double x, Double y){
+  def insideGoldman (x: Double,  y: Double): Boolean ={
       val ax = -74.0141012
       val ay = 40.7152191
       val bx = -74.013777
@@ -53,7 +53,7 @@ object RegionEventCount {
       }
   }
 
-  def insideCitigroup (Double x, Double y){
+  def insideCitigroup (x: Double, y: Double): Boolean ={
       val ax = -74.011869
       val ay = 40.7217236
       val bx = -74.009867
