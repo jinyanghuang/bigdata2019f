@@ -114,26 +114,23 @@ object TrendingArrivals {
     val stateSpec = StateSpec.function(trending _).numPartitions(2).timeout(Minutes(10))
 
     val wc = stream.map(_.split(","))
+      .map(line => {
+          if(line(0) == "yellow"){
+              (line(10).toDouble, line(11).toDouble)
+          }else{
+              (line(8).toDouble, line(9).toDouble)
+          }
+      })
       .map( p=> {
-          if (p(0) == "yellow"){
-              if (insideGoldman(p(10).toDouble, p(11).toDouble)){
+          if (p._1 >= -74.0144185 && p._1 <= -74.013777 && p._2 >= 40.7138745 && p._2 <= 40.7152275){
                   ("goldman" , 1)
-              }else if(insideCitigroup(p(10).toDouble, p(11).toDouble)){
+          }
+          else if(p._1 >= -74.012083 && p._1 <= -74.009867 && p._2 >= 40.720053 && p._2 <= 40.7217236){
                   ("citigroup",1)
-              }else{
+          }else{
                   ("grabage",1)
               }
-          }
-          else{
-              if(insideGoldman(p(8).toDouble, p(9).toDouble)){
-                  ("goldman" , 1)
-              }else if(insideCitigroup(p(8).toDouble, p(9).toDouble)){
-                  ("citigroup",1)
-              }else{
-                  ("grabage",1)
-              }
-          }
-          })
+          )
       .filter(_._1 != "grabage")
       
       .reduceByKeyAndWindow(
