@@ -1,79 +1,85 @@
-/**
-  * Bespin: reference implementations of "big data" algorithms
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  * http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
-
 package ca.uwaterloo.cs451.a7
 
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.log4j._
+import org.apache.spark._
+import org.apache.spark.storage._
+import org.apache.spark.streaming._
 import org.apache.spark.SparkContext
+import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StreamingContext}
 import org.apache.spark.streaming.scheduler.{StreamingListener, StreamingListenerBatchCompleted}
-import org.apache.spark.streaming.{ManualClockWrapper, Minutes, StreamingContext, Time, Seconds, StateSpec, State}
 import org.apache.spark.util.LongAccumulator
 import org.rogach.scallop._
 
 import scala.collection.mutable
 
+class TrendingArrivalsConf(args: Seq[String]) extends ScallopConf(args) {
+  mainOptions = Seq(input, checkpoint, output)
+  val input = opt[String](descr = "input path", required = true)
+  val checkpoint = opt[String](descr = "checkpoint path", required = true)
+  val output = opt[String](descr = "output path", required = true)
+  verify()
+}
+
 object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
+  
 
-  def trending(batchTime: Time, key: String, value: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
-      val previousState = state.getOption.getOrElse(0)
-      val currentState = value.getOrElse(0)
-      if(currentState >= 10 && currentState >= 2*previousState){
-          if(key == "citigroup"){
-              log.info("Number of arrivals to Citigroup has doubled from " + previousState + " to " + currentState + " at " + batchTime.milliseconds + "!")
-          }else if(key == "goldman"){
-              log.info("Number of arrivals to Goldman has doubled from " + previousState + " to " + currentState + " at " + batchTime.milliseconds + "!")
+  def trackState(batchTime: Time, key: String, newValue: Option[Tuple3[Int, Long, Int]], state: State[Tuple3[Int, Long, Int]]): Option[(String, Tuple3[Int, Long, Int])] = {
+      val current = newValue.getOrElse(0, 0, 0)._1
+      val past = state.getOption.getOrElse(0, 0, 0)._1
+      if((current >= 10) && (current >= (2*past))){
+          if(key == "goldman"){
+              println(s"Number of arrivals to Goldman Sachs has doubled from $past to $current at $batchTime!")
+          }else{
+              println(s"Number of arrivals to Citigroup has doubled from $past to $current at $batchTime!")
           }
       }
-      val output = (key, (currentState, batchTime.milliseconds, previousState))
-      state.update(currentState)
+
+      val output = (key, (current, batchTime.milliseconds, past))
+      state.update((current, batchTime.milliseconds, past))
       Some(output)
   }
 
   def main(argv: Array[String]): Unit = {
-    val args = new EventCountConf(argv)
+    val args = new TrendingArrivalsConf(argv)
 
     log.info("Input: " + args.input())
 
     val spark = SparkSession
       .builder()
       .config("spark.streaming.clock", "org.apache.spark.util.ManualClock")
-      .appName("EventCount")
+      .appName("TrendingArrivals")
       .getOrCreate()
 
     val numCompletedRDDs = spark.sparkContext.longAccumulator("number of completed RDDs")
 
     val batchDuration = Minutes(1)
     val ssc = new StreamingContext(spark.sparkContext, batchDuration)
-    val batchListener = new StreamingContextBatchCompletionListener(ssc, 24)
+    val batchListener = new StreamingContextBatchCompletionListener(ssc, 144)
     ssc.addStreamingListener(batchListener)
+
+    val goldman_X_min = -74.0144185
+    val goldman_X_max = -74.013777
+    val goldman_Y_min = 40.7138745
+    val goldman_Y_max = 40.7152275
+
+    val citigroup_X_min = -74.012083
+    val citigroup_X_max = -74.009867
+    val citigroup_Y_min = 40.720053
+    val citigroup_Y_max = 40.7217236
 
     val rdds = buildMockStream(ssc.sparkContext, args.input())
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
 
-    val stateSpec = StateSpec.function(trending _).numPartitions(2).timeout(Minutes(10))
-
     val wc = stream.map(_.split(","))
+
       .map(line => {
           if(line(0) == "yellow"){
               (line(10).toDouble, line(11).toDouble)
@@ -81,22 +87,24 @@ object TrendingArrivals {
               (line(8).toDouble, line(9).toDouble)
           }
       })
-      .filter(p => ((p._1 >= -74.0144185 && p._1 <= -74.013777 && p._2 >= 40.7138745 && p._2 <= 40.7152275)||(p._1 >= -74.012083 && p._1 <= -74.009867 && p._2 >= 40.720053 && p._2 <= 40.7217236)))
-      .map( p=> {
-          if (p._1 >= -74.0144185 && p._1 <= -74.013777 && p._2 >= 40.7138745 && p._2 <= 40.7152275){
-                  ("goldman" , 1)
-          }
-          else {
-                  ("citigroup",1)
+      .filter(p => ((p._1 >= -74.0144185 && p._1 <= -74.013777 && p._2 >= 40.7138745 && p._2 <= 40.7152275)||(p._1 >= -74.012083 && p._1 <= -74.009867 && p._2 >= 40.720053 && p._2 <= 40.7217236))
+)
+      .map(line => {
+          if((line._1 > goldman_X_min) && (line._1 < goldman_X_max) && (line._2 > goldman_Y_min) && (line._2 < goldman_Y_max)){
+              ("goldman", 1)
+          }else{
+              ("citigroup", 1)
           }
       })
-      
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      .mapWithState(StateSpec.function(trending _))
-      .persist()
+      //.persist()
+      .map(line => (line._1, (line._2, 0L, 0)))
+      .mapWithState(StateSpec.function(trackState _))
 
-    wc.saveAsTextFiles(args.output()+"/part-")
+
+    wc.print()
+    wc.saveAsTextFiles(args.output() + "/part")
 
     wc.foreachRDD(rdd => {
       numCompletedRDDs.add(1L)
