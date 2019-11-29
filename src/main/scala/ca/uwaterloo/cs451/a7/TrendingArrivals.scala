@@ -34,9 +34,9 @@ import scala.collection.mutable
 object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
 
-  def trending(batchTime: Time, key: String, value: Option[Tuple3[Int, Long, Int]], state: State[Tuple3[Int, Long, Int]]): Option[(String, Tuple3[Int, Long, Int])] = {
-      val previousState = state.getOption.getOrElse(0,0,0)._1
-      val currentState = value.getOrElse(0,0,0)._1
+  def trending(batchTime: Time, key: String, value: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
+      val previousState = state.getOption.getOrElse(0)
+      val currentState = value.getOrElse(0)
       if(currentState >= 10 && currentState >= 2*previousState){
           if(key == "citigroup"){
               log.info("Number of arrivals to Citigroup has doubled from " + previousState + " to " + currentState + " at " + batchTime.milliseconds + "!")
@@ -45,7 +45,7 @@ object TrendingArrivals {
           }
       }
       val output = (key, (currentState, batchTime.milliseconds, previousState))
-      state.update((currentState, batchTime.milliseconds, previousState))
+      state.update(currentState)
       Some(output)
   }
 
@@ -81,21 +81,18 @@ object TrendingArrivals {
               (line(8).toDouble, line(9).toDouble)
           }
       })
+      .filter(line => ((p._1 >= -74.0144185 && p._1 <= -74.013777 && p._2 >= 40.7138745 && p._2 <= 40.7152275)||(p._1 >= -74.012083 && p._1 <= -74.009867 && p._2 >= 40.720053 && p._2 <= 40.7217236)))
       .map( p=> {
           if (p._1 >= -74.0144185 && p._1 <= -74.013777 && p._2 >= 40.7138745 && p._2 <= 40.7152275){
                   ("goldman" , 1)
           }
-          else if(p._1 >= -74.012083 && p._1 <= -74.009867 && p._2 >= 40.720053 && p._2 <= 40.7217236){
+          else {
                   ("citigroup",1)
-          }else{
-                  ("grabage",1)
-              }
+          }
       })
-      .filter(_._1 != "grabage")
       
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      .map(line => (line._1, (line._2, 0L, 0)))  
       .mapWithState(StateSpec.function(trending _))
       .persist()
 
