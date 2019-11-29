@@ -34,9 +34,9 @@ import scala.collection.mutable
 object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
 
-  def trending(batchTime: Time, key: String, value: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
-      val previousState = state.getOption.getOrElse(0)
-      val currentState = value.getOrElse(0)
+  def trending(batchTime: Time, key: String, value: Option[Tuple3[Int, Long, Int]], state: State[Tuple3[Int, Long, Int]]): Option[(String, Tuple3[Int, Long, Int])] = {
+      val previousState = state.getOption.getOrElse(0,0,0)._1
+      val currentState = value.getOrElse(0,0,0)._1
       if(currentState >= 10 && currentState >= 2*previousState){
           if(key == "citigroup"){
               log.info("Number of arrivals to Citigroup has doubled from " + previousState + " to " + currentState + " at " + batchTime.milliseconds + "!")
@@ -45,7 +45,7 @@ object TrendingArrivals {
           }
       }
       val output = (key, (currentState, batchTime.milliseconds, previousState))
-      state.update(currentState)
+      state.update((currentState, batchTime.milliseconds, previousState))
       Some(output)
   }
 
@@ -95,6 +95,7 @@ object TrendingArrivals {
       
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
+      .map(line => (line._1, (line._2, 0L, 0)))  
       .mapWithState(StateSpec.function(trending _))
       .persist()
 
