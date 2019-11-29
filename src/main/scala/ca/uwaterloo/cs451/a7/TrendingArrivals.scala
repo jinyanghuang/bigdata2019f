@@ -30,9 +30,9 @@ object TrendingArrivals {
   val log = Logger.getLogger(getClass().getName())
   
 
-  def trackState(batchTime: Time, key: String, newValue: Option[Tuple3[Int, Long, Int]], state: State[Tuple3[Int, Long, Int]]): Option[(String, Tuple3[Int, Long, Int])] = {
-      val current = newValue.getOrElse(0, 0, 0)._1
-      val past = state.getOption.getOrElse(0, 0, 0)._1
+  def trending(batchTime: Time, key: String, newValue: Option[Int], state: State[Int]): Option[(String, (Int, Long, Int))] = {
+      val current = newValue.getOrElse(0)
+      val past = state.getOption.getOrElse(0)
       if((current >= 10) && (current >= (2*past))){
           if(key == "goldman"){
               println(s"Number of arrivals to Goldman Sachs has doubled from $past to $current at $batchTime!")
@@ -42,7 +42,7 @@ object TrendingArrivals {
       }
 
       val output = (key, (current, batchTime.milliseconds, past))
-      state.update((current, batchTime.milliseconds, past))
+      state.update(current)
       Some(output)
   }
 
@@ -98,8 +98,8 @@ object TrendingArrivals {
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
       //.persist()
-      .map(line => (line._1, (line._2, 0L, 0)))
-      .mapWithState(StateSpec.function(trackState _))
+    //   .map(line => (line._1, (line._2, 0L, 0)))
+      .mapWithState(StateSpec.function(trending _))
 
 
     wc.print()
