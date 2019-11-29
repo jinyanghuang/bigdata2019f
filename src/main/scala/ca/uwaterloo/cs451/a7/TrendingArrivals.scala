@@ -130,7 +130,7 @@ object TrendingArrivals {
           }else{
                   ("grabage",1)
               }
-          )
+      })
       .filter(_._1 != "grabage")
       
       .reduceByKeyAndWindow(
