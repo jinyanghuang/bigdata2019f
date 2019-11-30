@@ -27,9 +27,9 @@ object TrendingArrivals {
       val past = state.getOption.getOrElse(0)
       if((current >= 10) && (current >= (2*past))){
           if(key == "goldman"){
-              println(s"Number of arrivals to Goldman Sachs has doubled from $past to $current at $batchTime!")
+              log.info("Number of arrivals to Goldman Sachs has doubled from " + past + " to " + current + " at " + batchTime + "!")
           }else{
-              println(s"Number of arrivals to Citigroup has doubled from $past to $current at $batchTime!")
+              log.info("Number of arrivals to Citigroup Sachs has doubled from " + past + " to " + current + " at " + batchTime + "!")
           }
       }
 
