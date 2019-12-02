@@ -79,7 +79,7 @@ object TrendingArrivals {
       })
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      .mapWithState(StateSpec.function(trending _).numPartitions(2))
+      .mapWithState(StateSpec.function(trending _))
 
 
     wc.print()
