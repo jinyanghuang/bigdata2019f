@@ -56,16 +56,6 @@ object TrendingArrivals {
     val batchListener = new StreamingContextBatchCompletionListener(ssc, 144)
     ssc.addStreamingListener(batchListener)
 
-    val goldman_X_min = -74.0144185
-    val goldman_X_max = -74.013777
-    val goldman_Y_min = 40.7138745
-    val goldman_Y_max = 40.7152275
-
-    val citigroup_X_min = -74.012083
-    val citigroup_X_max = -74.009867
-    val citigroup_Y_min = 40.720053
-    val citigroup_Y_max = 40.7217236
-
     val rdds = buildMockStream(ssc.sparkContext, args.input())
     val inputData: mutable.Queue[RDD[String]] = mutable.Queue()
     val stream = ssc.queueStream(inputData)
@@ -89,8 +79,6 @@ object TrendingArrivals {
       })
       .reduceByKeyAndWindow(
         (x: Int, y: Int) => x + y, (x: Int, y: Int) => x - y, Minutes(10), Minutes(10))
-      //.persist()
-    //   .map(line => (line._1, (line._2, 0L, 0)))
       .mapWithState(StateSpec.function(trending _))
 
 
