@@ -116,7 +116,9 @@ github:Jinyanghuang
 
 **Feedback :** Q2 test 1 output is off by a single line but the delta is quite big. No bonus awarded for date format.
 
-**Final grade**
-mark: 95.0/100.0
+*Revision* Q2 test 1 correct answers found in the log. Bonus awarded for date formatting with `.contains(date)`.
 
-summary: 20812495,Jinyang Huang,Jinyanghuang,95.0/100.0
+**Final grade**
+mark: 105.0/100.0
+
+summary: 20812495,Jinyang Huang,Jinyanghuang,105.0/100.0
